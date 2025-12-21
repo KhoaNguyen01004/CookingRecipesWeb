@@ -1,0 +1,50 @@
+@model dynamic
+
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div class="d-flex justify-content-center align-items-center min-vh-100">
+    <div class="w-100" style="max-width: 400px;">
+        <h2 class="text-center mb-4">Login</h2>
+
+        <form asp-action="Login" method="post">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" class="form-control" required />
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" class="form-control" required />
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Login</button>
+        </form>
+
+        @if (ViewData.ModelState.ErrorCount > 0)
+        {
+            <div class="alert alert-danger mt-3">
+                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <p>@error.ErrorMessage</p>
+                }
+            </div>
+        }
+
+        <p class="text-center mt-3">Don't have an account? <a asp-action="Register">Register here</a></p>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <text>
+        document.addEventListener('DOMContentLoaded', function() {
+            const errorToast = new bootstrap.Toast(document.getElementById('errorToast'));
+            document.getElementById('errorMessage').textContent = '@TempData["ErrorMessage"]';
+            errorToast.show();
+        });
+            </text>
+        }
+    </script>
+}

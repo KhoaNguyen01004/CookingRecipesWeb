@@ -1,0 +1,88 @@
+@model CookingRecipesWeb.Models.Recipe
+
+@{
+    ViewData["Title"] = Model.StrMeal;
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-4">
+            <img src="@Model.StrMealThumb" class="img-fluid rounded" alt="@Model.StrMeal">
+        </div>
+        <div class="col-md-8">
+            <h1>@Model.StrMeal</h1>
+            <p><strong>Category:</strong> @Model.StrCategory</p>
+            <p><strong>Area:</strong> @Model.StrArea</p>
+            <h3>Ingredients</h3>
+            <ul>
+                @for (int i = 1; i <= 20; i++)
+                {
+                    var ingredient = Model.GetType().GetProperty($"StrIngredient{i}")?.GetValue(Model)?.ToString();
+                    var measure = Model.GetType().GetProperty($"StrMeasure{i}")?.GetValue(Model)?.ToString();
+                    if (!string.IsNullOrEmpty(ingredient))
+                    {
+                        <li>@measure @ingredient</li>
+                    }
+                }
+            </ul>
+            <h3>Instructions</h3>
+            <p>@Model.StrInstructions</p>
+        </div>
+    </div>
+    <div class="mt-4">
+        @if (Context.Session.GetString("UserId") != null)
+        {
+            <button id="favorite-btn" class="btn btn-outline-warning mt-4 me-2">
+                <i class="bi bi-heart"></i> <span id="favorite-text">Add to Favorites</span>
+            </button>
+        }
+        <a href="@Url.Action("Index", "Home")" class="btn btn-secondary mt-4">Back to Recipes</a>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const favoriteBtn = document.getElementById('favorite-btn');
+            const favoriteText = document.getElementById('favorite-text');
+            const recipeId = '@Model?.IdMeal';
+
+            if (favoriteBtn) {
+                // Check initial favorite status
+                fetch('/Home/IsFavorite?recipeId=' + recipeId)
+                    .then(response => response.json())
+                    .then(isFavorite => {
+                        updateFavoriteButton(isFavorite);
+                    });
+
+                favoriteBtn.addEventListener('click', function() {
+                    fetch('/Home/ToggleFavorite', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: 'recipeId=' + recipeId
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            updateFavoriteButton(data.isFavorite);
+                        }
+                    });
+                });
+            }
+
+            function updateFavoriteButton(isFavorite) {
+                if (isFavorite) {
+                    favoriteBtn.classList.remove('btn-outline-warning');
+                    favoriteBtn.classList.add('btn-warning');
+                    favoriteText.textContent = 'Remove from Favorites';
+                } else {
+                    favoriteBtn.classList.remove('btn-warning');
+                    favoriteBtn.classList.add('btn-outline-warning');
+                    favoriteText.textContent = 'Add to Favorites';
+                }
+            }
+        });
+    </script>
+}

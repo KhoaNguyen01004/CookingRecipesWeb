@@ -1,0 +1,47 @@
+﻿@model IEnumerable<CookingRecipesWeb.Models.Recipe>
+
+@{
+    ViewData["Title"] = "Recipes";
+}
+
+<div class="container">
+    <h1 class="my-4">Recipes</h1>
+
+    @if (ViewBag.SearchQuery != null)
+    {
+        <p>Search results for "@ViewBag.SearchQuery"</p>
+    }
+    else if (ViewBag.Category != null)
+    {
+        <p>Recipes in category "@ViewBag.Category"</p>
+    }
+
+    <div class="row" id="recipes-container">
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var recipe in Model)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <img src="@(recipe.StrMealThumb ?? "/images/default-recipe.jpg")" class="card-img-top" alt="@(recipe.StrMeal ?? "Recipe")" style="height: 200px; object-fit: cover;">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">@(recipe.StrMeal ?? "Unknown Recipe")</h5>
+                            <p class="card-text">@(recipe.StrCategory ?? "Unknown") - @(recipe.StrArea ?? "Unknown")</p>
+                            <a href="@Url.Action("RecipeDetails", "Home", new { id = recipe.IdMeal })" class="btn btn-primary mt-auto">View Recipe</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <p>No recipes found.</p>
+            </div>
+        }
+    </div>
+    <div class="text-center mt-4">
+        <button id="load-more" class="btn btn-primary" data-category="@ViewBag.Category" data-skip="9">Load More</button>
+    </div>
+</div>
+

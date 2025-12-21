@@ -1,0 +1,85 @@
+# ASP.NET Core
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+
+# NuGet Packages
+*.nupkg
+**/packages/*
+
+# Visual Studio 15.6+
+.vs/
+
+# Rider
+.idea/
+
+# ReSharper
+_ReSharper*/
+
+# TeamCity
+_TeamCity*
+
+# DotCover
+*.dotCover
+
+# dotCover CLI
+dotcover.CommandLine.xml
+
+# AppVeyor
+appveyor.yml
+
+# Cake
+tools/
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+
+# Linux
+*~
+
+# Visual Studio Code
+.vscode/
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# Entity Framework Core
+*.db
+*.db-shm
+*.db-wal
+
+# ASP.NET Core
+appsettings.Development.json
+appsettings.*.json
+
+# User secrets
+secrets.json
+
+# Docker
+.dockerignore
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# Node.js (if using npm for frontend)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# For more information about .gitignore for ASP.NET Core, see https://docs.microsoft.com/en-us/aspnet/core/fundamentals/environments

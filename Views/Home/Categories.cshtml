@@ -1,0 +1,36 @@
+@model IEnumerable<CookingRecipesWeb.Models.Category>
+
+@{
+    ViewData["Title"] = "Categories";
+}
+
+<div class="container">
+    <h1 class="my-4">Recipe Categories</h1>
+
+    <div class="row">
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var category in Model)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <img src="@category.StrCategoryThumb" class="card-img-top" alt="@category.StrCategory" style="height: 200px; object-fit: cover;">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">@category.StrCategory</h5>
+                            <p class="card-text">@(category.StrCategoryDescription?.Length > 100 ? category.StrCategoryDescription.Substring(0, 100) + "..." : category.StrCategoryDescription)</p>
+                            <a href="@Url.Action("Index", "Home", new { category = category.StrCategory })" class="btn btn-primary mt-auto">View Recipes</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <p>No categories found.</p>
+            </div>
+        }
+    </div>
+
+    <a href="@Url.Action("Index", "Home")" class="btn btn-secondary mt-4">Back to Recipes</a>
+</div>
