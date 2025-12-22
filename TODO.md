@@ -1,13 +1,17 @@
-# TODO: Fix Supabase Namespace Issue
+# TODO List for Fixing Issues
 
-## Steps to Complete
+## 1. Fix Favorite Button Functionality
+- [x] Add error handling and logging to ToggleFavorite method in HomeController.cs
+- [x] Test favorite button after changes
 
-- [x] Update CookingRecipesWeb.csproj to add the 'Supabase' package reference
-- [x] Update Program.cs to register the main Supabase.Client as a singleton using IConfiguration
-- [x] Update Services/UserService.cs:
-  - [x] Change using statement to 'using Supabase;'
-  - [x] Declare 'private readonly Client _client;'
-  - [x] Update constructor to inject Client
-  - [x] Replace '_postgrestClient' with '_client.Postgrest' in all methods
-- [x] Run 'dotnet restore' to restore packages
-- [x] Run 'dotnet build' to verify the changes
+## 2. Fix Favorite List Page Errors
+- [x] Update MyFavorites action to handle missing recipes gracefully
+- [x] Test MyFavorites page after changes
+
+## 3. Populate Privacy Page
+- [x] Replace placeholder text in Views/Home/Privacy.cshtml with standard privacy policy content
+- [x] Verify privacy page displays correctly
+
+## 4. Fix Dark Mode Visibility Issues
+- [x] Update wwwroot/css/site.css to ensure buttons and text are visible in both modes
+- [x] Test dark mode toggle for visibility issues

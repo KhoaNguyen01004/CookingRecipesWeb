@@ -93,6 +93,76 @@ body {
   color: var(--bg-color);
 }
 
+/* Ensure button text is always visible */
+.btn {
+  color: var(--text-color) !important;
+}
+
+.btn:hover {
+  color: var(--bg-color) !important;
+}
+
+/* Fix for dropdown menu items */
+.dropdown-menu {
+  background-color: var(--bg-color) !important;
+  border-color: var(--text-color) !important;
+}
+
+.dropdown-menu .dropdown-item {
+  color: var(--text-color) !important;
+}
+
+.dropdown-menu .dropdown-item:hover {
+  background-color: var(--navbar-bg) !important;
+  color: var(--text-color) !important;
+}
+
+/* Ensure form controls are visible */
+.form-control {
+  background-color: var(--bg-color) !important;
+  color: var(--text-color) !important;
+  border-color: var(--text-color) !important;
+}
+
+.form-control:focus {
+  background-color: var(--bg-color) !important;
+  color: var(--text-color) !important;
+}
+
+/* Fix for navbar links */
+.navbar .nav-link {
+  color: var(--navbar-text) !important;
+}
+
+.navbar .nav-link:hover {
+  color: var(--navbar-text) !important;
+}
+
+/* Ensure footer text is visible */
+.footer {
+  color: var(--footer-text) !important;
+}
+
+.footer a {
+  color: var(--footer-text) !important;
+}
+
+.footer a:hover {
+  color: var(--footer-text) !important;
+}
+
+/* Fix placeholder text contrast */
+.form-control::placeholder {
+  color: var(--text-color) !important;
+  opacity: 0.6 !important;
+}
+
+/* Fix text-muted class for better contrast */
+.text-muted {
+  color: var(--text-color) !important;
+  opacity: 0.7 !important;
+}
+
 .form-floating>.form-control-plaintext::placeholder,
 .form-floating>.form-control::placeholder {
   color: var(--bs-secondary-color);

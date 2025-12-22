@@ -39,7 +39,7 @@ namespace CookingRecipesWeb.Services
         {
             var res = await _client.Postgrest
                 .Table<Favorite>()
-                .Filter("user_id", Supabase.Postgrest.Constants.Operator.Equals, userId)
+                .Filter("user_id", Supabase.Postgrest.Constants.Operator.Equals, userId.ToString())
                 .Get();
 
             return res.Models;
@@ -60,7 +60,7 @@ namespace CookingRecipesWeb.Services
         {
             await _client.Postgrest
                 .Table<Favorite>()
-                .Filter("user_id", Supabase.Postgrest.Constants.Operator.Equals, userId)
+                .Filter("user_id", Supabase.Postgrest.Constants.Operator.Equals, userId.ToString())
                 .Filter("recipe_id", Supabase.Postgrest.Constants.Operator.Equals, recipeId)
                 .Delete();
         }
@@ -69,7 +69,7 @@ namespace CookingRecipesWeb.Services
         {
             var res = await _client.Postgrest
                 .Table<Favorite>()
-                .Filter("user_id", Supabase.Postgrest.Constants.Operator.Equals, userId)
+                .Filter("user_id", Supabase.Postgrest.Constants.Operator.Equals, userId.ToString())
                 .Filter("recipe_id", Supabase.Postgrest.Constants.Operator.Equals, recipeId)
                 .Get();
 

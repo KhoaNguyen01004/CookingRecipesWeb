@@ -140,27 +140,42 @@ namespace CookingRecipesWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> ToggleFavorite(string recipeId)
         {
-            var userIdString = HttpContext.Session.GetString("UserId");
-            if (string.IsNullOrEmpty(userIdString))
+            try
             {
-                return Json(new { success = false, message = "User not logged in" });
-            }
+                var userIdString = HttpContext.Session.GetString("UserId");
+                if (string.IsNullOrEmpty(userIdString))
+                {
+                    return Json(new { success = false, message = "User not logged in" });
+                }
 
-            if (!Guid.TryParse(userIdString, out var userId))
-            {
-                return Json(new { success = false, message = "Invalid user session" });
-            }
-            var isFavorite = await _userService.IsFavoriteAsync(userId, recipeId);
+                if (!Guid.TryParse(userIdString, out var userId))
+                {
+                    return Json(new { success = false, message = "Invalid user session" });
+                }
 
-            if (isFavorite)
-            {
-                await _userService.RemoveFavoriteAsync(userId, recipeId);
-                return Json(new { success = true, isFavorite = false });
+                if (string.IsNullOrEmpty(recipeId))
+                {
+                    return Json(new { success = false, message = "Invalid recipe ID" });
+                }
+
+                var isFavorite = await _userService.IsFavoriteAsync(userId, recipeId);
+
+                if (isFavorite)
+                {
+                    await _userService.RemoveFavoriteAsync(userId, recipeId);
+                    return Json(new { success = true, isFavorite = false });
+                }
+                else
+                {
+                    await _userService.AddFavoriteAsync(userId, recipeId);
+                    return Json(new { success = true, isFavorite = true });
+                }
             }
-            else
+            catch (Exception ex)
             {
-                await _userService.AddFavoriteAsync(userId, recipeId);
-                return Json(new { success = true, isFavorite = true });
+                // Log the error (you might want to use a proper logging framework)
+                Console.WriteLine($"Error in ToggleFavorite: {ex.Message}");
+                return Json(new { success = false, message = "An error occurred while updating favorites" });
             }
         }
 
