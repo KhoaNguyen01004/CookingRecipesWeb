@@ -1,4 +1,4 @@
-# CookingFinal_Remake
+# CookingFinal
 
 A web application for browsing, managing, and favoriting cooking recipes. Built with ASP.NET Core MVC, this app allows users to explore recipes by categories, view detailed instructions, and save their favorite recipes.
 
