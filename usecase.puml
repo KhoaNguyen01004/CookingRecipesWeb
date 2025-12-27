@@ -1,0 +1,61 @@
+﻿@startuml
+' --- Configuration ---
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam actorStyle awesome
+
+' --- Actors ---
+actor "Guest" as G
+actor "Registered User" as U
+
+' Inheritance: User can do everything a Guest can do
+U -up-|> G
+
+' --- System Boundary ---
+rectangle "Recipe Web Application" {
+
+  package "Authentication" {
+    usecase "Register Account" as UC001
+    usecase "Login" as UC002
+  }
+
+  package "Recipe Discovery" {
+    usecase "View Recipe List" as UC003
+    usecase "View Recipe Detail" as UC004
+    usecase "Search Recipes" as UC005
+    usecase "Browse Categories" as UC006
+    usecase "Load More Recipes" as UC009
+    usecase "View Random Recipe" as UC010
+  }
+
+  package "Member Features" {
+    usecase "Add to Favorites" as UC007
+    usecase "Remove from Favorites" as UC007b
+    usecase "View Favorite Recipes" as UC008
+  }
+}
+
+' --- Connections ---
+
+' Guest Actions (Inherited by User)
+G --> UC001
+G --> UC002
+G --> UC003
+G --> UC004
+G --> UC005
+G --> UC006
+G --> UC009
+G --> UC010
+
+' User Specific Actions
+U --> UC007
+U --> UC007b
+U --> UC008
+
+' Logic Dependencies
+UC007 ..> UC002 : <<include>>
+UC007b ..> UC002 : <<include>>
+UC008 ..> UC002 : <<include>>
+
+@enduml

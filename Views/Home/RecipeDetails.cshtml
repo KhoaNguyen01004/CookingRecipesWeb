@@ -27,6 +27,15 @@
             </ul>
             <h3>Instructions</h3>
             <p>@Model.StrInstructions</p>
+            @if (!string.IsNullOrEmpty(Model.StrYoutube))
+            {
+                <h3>Video Tutorial</h3>
+                var videoId = Model.StrYoutube.Split("v=")[1]?.Split("&")[0];
+                var embedUrl = $"https://www.youtube.com/embed/{videoId}";
+                <div class="ratio ratio-16x9">
+                    <iframe src="@embedUrl" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                </div>
+            }
         </div>
     </div>
     <div class="mt-4">
