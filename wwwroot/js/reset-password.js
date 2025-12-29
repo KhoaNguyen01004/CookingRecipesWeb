@@ -5,7 +5,10 @@ document.addEventListener('DOMContentLoaded', function () {
         e.preventDefault();
 
         // Get captcha token
-        let captchaToken = hcaptcha.getResponse();
+        let captchaToken = '';
+        if (typeof hcaptcha !== 'undefined') {
+            captchaToken = hcaptcha.getResponse();
+        }
 
         // For localhost testing with test sitekey, always provide a dummy token
         if (!captchaToken && window.hCaptchaSiteKey === '10000000-ffff-ffff-ffff-000000000001') {
