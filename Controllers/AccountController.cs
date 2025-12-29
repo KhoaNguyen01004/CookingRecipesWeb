@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -17,13 +18,15 @@ namespace CookingRecipesWeb.Controllers
         private readonly UserService _userService;
         private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
+        private readonly ILogger<AccountController> _logger;
 
-        public AccountController(Client client, UserService userService, IConfiguration configuration, HttpClient httpClient)
+        public AccountController(Client client, UserService userService, IConfiguration configuration, HttpClient httpClient, ILogger<AccountController> logger)
         {
             _client = client;
             _userService = userService;
             _configuration = configuration;
             _httpClient = httpClient;
+            _logger = logger;
         }
 
         // ======================
@@ -39,7 +42,7 @@ namespace CookingRecipesWeb.Controllers
         // LOGIN (POST)
         // ======================
         [HttpPost]
-        public async Task<IActionResult> Login(string email, string password, string captchaToken)
+        public async Task<IActionResult> Login(string email, string password, [FromForm(Name = "h-captcha-response")] string captchaToken)
         {
             try
             {
@@ -98,7 +101,7 @@ namespace CookingRecipesWeb.Controllers
             string email,
             string password,
             string confirmPassword,
-            string captchaToken)
+            [FromForm(Name = "h-captcha-response")] string captchaToken)
         {
             if (password != confirmPassword)
             {
@@ -180,7 +183,7 @@ namespace CookingRecipesWeb.Controllers
         // RESET PASSWORD (POST)
         // ======================
         [HttpPost]
-        public async Task<IActionResult> ResetPassword(string accessToken, string newPassword, string captchaToken)
+        public async Task<IActionResult> ResetPassword(string accessToken, string newPassword, [FromForm(Name = "h-captcha-response")] string captchaToken)
         {
             try
             {
@@ -222,8 +225,11 @@ namespace CookingRecipesWeb.Controllers
 
         private async Task<bool> VerifyCaptchaToken(string token)
         {
+            _logger.LogInformation($"Verifying CAPTCHA token: {token}");
+
             if (string.IsNullOrEmpty(token))
             {
+                _logger.LogWarning("CAPTCHA token is null or empty");
                 return false;
             }
 
@@ -232,6 +238,7 @@ namespace CookingRecipesWeb.Controllers
             // For localhost testing with hCaptcha test sitekey, always succeed
             if (secretKey == "0x0000000000000000000000000000000000000000")
             {
+                _logger.LogInformation("Using test secret key, CAPTCHA verification bypassed");
                 return true;
             }
 
@@ -244,9 +251,12 @@ namespace CookingRecipesWeb.Controllers
 
             var response = await _httpClient.PostAsync("https://hcaptcha.com/siteverify", content);
             var responseString = await response.Content.ReadAsStringAsync();
+            _logger.LogInformation($"hCaptcha siteverify response: {responseString}");
             var result = JsonConvert.DeserializeObject<dynamic>(responseString);
 
-            return result.success == true;
+            var success = result.success == true;
+            _logger.LogInformation($"CAPTCHA verification result: {success}");
+            return success;
         }
     }
 }
