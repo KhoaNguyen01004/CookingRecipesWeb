@@ -6,6 +6,7 @@ namespace CookingRecipesWeb.Models
     [Table("users")]
     public class User : BaseModel
     {
+        [PrimaryKey("id")]
         [Column("id")]
         public Guid Id { get; set; }
         [Column("first_name")]

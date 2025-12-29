@@ -19,6 +19,7 @@ namespace CookingRecipesWeb.Models
         [Column("created_at")]
         public DateTime CreatedAt { get; set; }
 
+        [Column("is_from_api")]
         public bool IsFromApi { get; set; }
     }
 }

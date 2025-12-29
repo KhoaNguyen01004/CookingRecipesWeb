@@ -1,4 +1,4 @@
-@model IEnumerable<CookingRecipesWeb.Models.Favorite>
+@model IEnumerable<CookingRecipesWeb.Models.FavoriteViewModel>
 
 @{
     ViewData["Title"] = "Manage Favorites";
@@ -7,53 +7,56 @@
 <div class="container">
     <h1 class="my-4">Manage Favorites</h1>
 
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
     <div class="row">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5>All Favorites</h5>
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var favoriteViewModel in Model)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card">
+                        <img src="@favoriteViewModel.Recipe.StrMealThumb" class="card-img-top"
+                            alt="@favoriteViewModel.Recipe.StrMeal" style="height: 200px; object-fit: cover;">
+                        <div class="card-body">
+                            <h5 class="card-title">@favoriteViewModel.Recipe.StrMeal</h5>
+                            <div class="d-flex justify-content-between">
+                                <a href="@Url.Action("RecipeDetails", "Home", new { id = favoriteViewModel.Favorite.RecipeId })"
+                                    class="btn btn-info btn-sm">View Recipe</a>
+                                <form method="post" action="@Url.Action("RemoveFavorite", "Admin")" style="display: inline;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="userId" value="@favoriteViewModel.Favorite.UserId" />
+                                    <input type="hidden" name="recipeId" value="@favoriteViewModel.Favorite.RecipeId" />
+                                    <button type="submit" class="btn btn-danger btn-sm"
+                                        onclick="return confirm('Are you sure you want to remove this favorite?')">Remove</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>User ID</th>
-                                <th>Recipe ID</th>
-                                <th>Recipe Name</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @if (Model != null && Model.Any())
-                            {
-                                @foreach (var favorite in Model)
-                                {
-                                    <tr>
-                                        <td>@favorite.UserId</td>
-                                        <td>@favorite.RecipeId</td>
-                                        <td>@favorite.RecipeId</td>
-                                        <td>
-                                            <a href="@Url.Action("RecipeDetails", "Home", new { id = favorite.RecipeId })" class="btn btn-info btn-sm">View Recipe</a>
-                                            <form method="post" action="@Url.Action("RemoveFavorite", "Admin")" style="display: inline;">
-                                                @Html.AntiForgeryToken()
-                                                <input type="hidden" name="userId" value="@favorite.UserId" />
-                                                <input type="hidden" name="recipeId" value="@favorite.RecipeId" />
-                                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to remove this favorite?')">Remove</button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                }
-                            }
-                            else
-                            {
-                                <tr>
-                                    <td colspan="4">No favorites found.</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <div class="alert alert-info" role="alert">
+                    No favorites found.
                 </div>
             </div>
-        </div>
+        }
     </div>
 </div>

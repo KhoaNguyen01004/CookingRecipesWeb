@@ -65,7 +65,18 @@ namespace CookingRecipesWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> RecipeDetails(string id)
         {
-            var recipe = await _recipeService.GetRecipeByIdAsync(id);
+            // First check if recipe exists in database
+            var recipe = await _recipeService.GetRecipeByIdFromDbAsync(id);
+            if (recipe == null)
+            {
+                // If not in DB, fetch from API
+                recipe = await _recipeService.GetRecipeByIdAsync(id);
+                if (recipe != null)
+                {
+                    // Store the recipe in database for future reference and to satisfy foreign key constraints
+                    await _recipeService.CreateRecipeAsync(recipe);
+                }
+            }
             if (recipe == null)
             {
                 return NotFound();
@@ -175,6 +186,13 @@ namespace CookingRecipesWeb.Controllers
                     return Json(new { success = false, message = "Invalid recipe ID" });
                 }
 
+                // Check if the recipe exists before proceeding
+                var recipe = await _recipeService.GetRecipeByIdAsync(recipeId);
+                if (recipe == null)
+                {
+                    return Json(new { success = false, message = "Recipe not found" });
+                }
+
                 var accessToken = HttpContext.Session.GetString("AccessToken");
                 var refreshToken = HttpContext.Session.GetString("RefreshToken");
                 var isFavorite = await _userService.IsFavoriteAsync(userId, recipeId, accessToken, refreshToken);
@@ -233,10 +251,18 @@ namespace CookingRecipesWeb.Controllers
 
             foreach (var recipeId in favoriteRecipeIds)
             {
-                var recipe = await _recipeService.GetRecipeByIdAsync(recipeId);
-                if (recipe != null)
+                try
                 {
-                    favoriteRecipes.Add(recipe);
+                    var recipe = await _recipeService.GetRecipeByIdAsync(recipeId);
+                    if (recipe != null)
+                    {
+                        favoriteRecipes.Add(recipe);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Log the error but continue processing other favorites
+                    Console.WriteLine($"Error fetching recipe {recipeId}: {ex.Message}");
                 }
             }
 

@@ -7,6 +7,41 @@ CREATE TABLE public.areas (
   created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT areas_pkey PRIMARY KEY (id)
 );
+CREATE TABLE public.ratings (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  recipe_id text NOT NULL,
+  rating integer NOT NULL CHECK (rating >= 1 AND rating <= 5),
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT ratings_pkey PRIMARY KEY (id),
+  CONSTRAINT ratings_user_recipe_unique UNIQUE (user_id, recipe_id),
+  CONSTRAINT ratings_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE,
+  CONSTRAINT ratings_recipe_id_fkey FOREIGN KEY (recipe_id) REFERENCES public.recipes(id) ON DELETE CASCADE
+);
+CREATE TABLE public.reviews (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  recipe_id text NOT NULL,
+  review_text text NOT NULL,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT reviews_pkey PRIMARY KEY (id),
+  CONSTRAINT reviews_user_recipe_unique UNIQUE (user_id, recipe_id),
+  CONSTRAINT reviews_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE,
+  CONSTRAINT reviews_recipe_id_fkey FOREIGN KEY (recipe_id) REFERENCES public.recipes(id) ON DELETE CASCADE
+);
+CREATE TABLE public.review_replies (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  parent_review_id uuid NOT NULL,
+  user_id uuid NOT NULL,
+  reply_text text NOT NULL,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT review_replies_pkey PRIMARY KEY (id),
+  CONSTRAINT review_replies_parent_review_id_fkey FOREIGN KEY (parent_review_id) REFERENCES public.reviews(id) ON DELETE CASCADE,
+  CONSTRAINT review_replies_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE
+);
 CREATE TABLE public.categories (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   name text NOT NULL UNIQUE,
@@ -161,3 +196,24 @@ CREATE POLICY "areas_select_all" ON public.areas
   FOR SELECT USING (true);
 CREATE POLICY "areas_manage_admin" ON public.areas
   FOR ALL USING (EXISTS(SELECT 1 FROM public.users u WHERE u.id = auth.uid() AND u.role='admin'));
+
+-- RATINGS
+ALTER TABLE public.ratings ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "ratings_select_all" ON public.ratings
+  FOR SELECT USING (true);
+CREATE POLICY "ratings_manage_own" ON public.ratings
+  FOR ALL USING (user_id = auth.uid());
+
+-- REVIEWS
+ALTER TABLE public.reviews ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "reviews_select_all" ON public.reviews
+  FOR SELECT USING (true);
+CREATE POLICY "reviews_manage_own" ON public.reviews
+  FOR ALL USING (user_id = auth.uid());
+
+-- REVIEW_REPLIES
+ALTER TABLE public.review_replies ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "review_replies_select_all" ON public.review_replies
+  FOR SELECT USING (true);
+CREATE POLICY "review_replies_manage_own" ON public.review_replies
+  FOR ALL USING (user_id = auth.uid());

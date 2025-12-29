@@ -118,7 +118,28 @@ namespace CookingRecipesWeb.Controllers
             }
 
             var favorites = await _userService.GetAllFavoritesAsync();
-            return View(favorites);
+            var favoriteViewModels = new List<FavoriteViewModel>();
+
+            foreach (var favorite in favorites)
+            {
+                // First try to get from database
+                var recipe = await _recipeService.GetRecipeByIdFromDbAsync(favorite.RecipeId);
+                if (recipe == null)
+                {
+                    // If not in database, try API
+                    recipe = await _recipeService.GetRecipeByIdAsync(favorite.RecipeId);
+                }
+                if (recipe != null)
+                {
+                    favoriteViewModels.Add(new FavoriteViewModel
+                    {
+                        Favorite = favorite,
+                        Recipe = recipe
+                    });
+                }
+            }
+
+            return View(favoriteViewModels);
         }
 
         // ======================
@@ -130,11 +151,21 @@ namespace CookingRecipesWeb.Controllers
             var userRole = HttpContext.Session.GetString("UserRole");
             if (userRole != "admin")
             {
-                return Json(new { success = false, message = "Unauthorized" });
+                TempData["Error"] = "Unauthorized";
+                return RedirectToAction("ManageFavorites");
             }
 
-            await _userService.RemoveFavoriteAsync(userId, recipeId);
-            return Json(new { success = true });
+            try
+            {
+                await _userService.RemoveFavoriteAsync(userId, recipeId);
+                TempData["Success"] = "Favorite removed successfully.";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Failed to remove favorite: {ex.Message}";
+            }
+
+            return RedirectToAction("ManageFavorites");
         }
 
         // ======================
@@ -156,7 +187,7 @@ namespace CookingRecipesWeb.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateRecipe(Recipe recipe, List<string> SelectedCategoryNames)
+        public async Task<IActionResult> CreateRecipe(Recipe recipe, List<string> SelectedCategoryIds)
         {
             var userRole = HttpContext.Session.GetString("UserRole");
             if (userRole != "admin")
@@ -166,66 +197,22 @@ namespace CookingRecipesWeb.Controllers
 
             if (ModelState.IsValid)
             {
-                // Check for duplicates in API
-                var apiRecipes = await _recipeService.GetApiRecipesAsync(100); // Fetch more to check
-                if (apiRecipes.Any(r => r.StrMeal?.ToLower() == recipe.StrMeal?.ToLower()))
-                {
-                    ModelState.AddModelError("", "A recipe with this name already exists in the API.");
-                    return View(recipe);
-                }
-
                 // Generate new ID
                 recipe.Id = Guid.NewGuid().ToString();
 
                 var success = await _recipeService.CreateRecipeAsync(recipe);
                 if (success)
                 {
-                    // Handle categories - create them if they don't exist in database
-                    if (SelectedCategoryNames != null && SelectedCategoryNames.Any())
+                    // Handle categories - map IDs to Guids
+                    if (SelectedCategoryIds != null && SelectedCategoryIds.Any())
                     {
-                        var categoryIds = new List<Guid>();
+                        var categoryGuids = SelectedCategoryIds.Select(id => Guid.Parse(id)).ToList();
 
-                        foreach (var categoryName in SelectedCategoryNames)
+                        var categorySuccess = await _recipeService.CreateRecipeCategoriesAsync(recipe.Id, categoryGuids);
+                        if (!categorySuccess)
                         {
-                            // Check if category exists in database
-                            var allCategories = await _recipeService.GetCategoriesAsync();
-                            var existingCategory = allCategories.FirstOrDefault(c => c.Name.Equals(categoryName, StringComparison.OrdinalIgnoreCase));
-
-                            if (existingCategory != null)
-                            {
-                                categoryIds.Add(existingCategory.Id);
-                            }
-                            else
-                            {
-                                // Create new category in database
-                                var newCategory = new Category
-                                {
-                                    Name = categoryName,
-                                    CreatedAt = DateTime.UtcNow
-                                };
-
-                                var createSuccess = await _recipeService.CreateCategoryAsync(newCategory);
-                                if (createSuccess)
-                                {
-                                    // Get the newly created category to get its ID
-                                    var updatedCategories = await _recipeService.GetCategoriesAsync();
-                                    var createdCategory = updatedCategories.FirstOrDefault(c => c.Name.Equals(categoryName, StringComparison.OrdinalIgnoreCase));
-                                    if (createdCategory != null)
-                                    {
-                                        categoryIds.Add(createdCategory.Id);
-                                    }
-                                }
-                            }
-                        }
-
-                        if (categoryIds.Any())
-                        {
-                            var categorySuccess = await _recipeService.CreateRecipeCategoriesAsync(recipe.Id, categoryIds);
-                            if (!categorySuccess)
-                            {
-                                ModelState.AddModelError("", "Recipe created but failed to assign categories.");
-                                return View(recipe);
-                            }
+                            ModelState.AddModelError("", "Recipe created but failed to assign categories.");
+                            return View(recipe);
                         }
                     }
 
@@ -364,6 +351,79 @@ namespace CookingRecipesWeb.Controllers
             }
 
             var success = await _userService.UpdateUserRoleAsync(userId, role);
+            return Json(new { success = success });
+        }
+
+        // ======================
+        // EDIT USER
+        // ======================
+        [HttpGet]
+        public async Task<IActionResult> EditUser(string id)
+        {
+            var userRole = HttpContext.Session.GetString("UserRole");
+            if (userRole != "admin")
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            if (!Guid.TryParse(id, out Guid userId))
+            {
+                return NotFound();
+            }
+
+            var user = await _userService.GetUserByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            return View(user);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditUser(User user)
+        {
+            var userRole = HttpContext.Session.GetString("UserRole");
+            if (userRole != "admin")
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            if (ModelState.IsValid)
+            {
+                // Update user details
+                var success = await _userService.UpdateUserRoleAsync(user.Id.ToString(), user.Role);
+                if (success)
+                {
+                    return RedirectToAction("Dashboard");
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Failed to update user.");
+                }
+            }
+
+            return View(user);
+        }
+
+        // ======================
+        // DELETE USER
+        // ======================
+        [HttpPost]
+        public async Task<IActionResult> DeleteUser(string id)
+        {
+            var userRole = HttpContext.Session.GetString("UserRole");
+            if (userRole != "admin")
+            {
+                return Json(new { success = false, message = "Unauthorized" });
+            }
+
+            if (!Guid.TryParse(id, out Guid userId))
+            {
+                return Json(new { success = false, message = "Invalid user ID" });
+            }
+
+            var success = await _userService.DeleteUserAsync(userId.ToString());
             return Json(new { success = success });
         }
 

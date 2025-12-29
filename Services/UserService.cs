@@ -45,7 +45,7 @@ namespace CookingRecipesWeb.Services
         {
             return await _client.Postgrest
                 .Table<User>()
-                .Filter("id", Supabase.Postgrest.Constants.Operator.Equals, userId)
+                .Filter("id", Supabase.Postgrest.Constants.Operator.Equals, userId.ToString())
                 .Single();
         }
 
@@ -114,11 +114,14 @@ namespace CookingRecipesWeb.Services
 
         public async Task RemoveFavoriteAsync(Guid userId, string recipeId, string accessToken = null, string refreshToken = null)
         {
-            if (!string.IsNullOrEmpty(accessToken))
+            // Use admin client for admin operations to bypass RLS
+            var clientToUse = _adminClient ?? _client;
+
+            if (!string.IsNullOrEmpty(accessToken) && clientToUse == _client)
             {
                 await _client.Auth.SetSession(accessToken, refreshToken);
             }
-            await _client.Postgrest
+            await clientToUse.Postgrest
                 .Table<Favorite>()
                 .Filter("user_id", Supabase.Postgrest.Constants.Operator.Equals, userId.ToString())
                 .Filter("recipe_id", Supabase.Postgrest.Constants.Operator.Equals, recipeId)
@@ -142,7 +145,10 @@ namespace CookingRecipesWeb.Services
 
         public async Task<List<User>> GetAllUsersAsync()
         {
-            var res = await _client.Postgrest
+            // Use admin client for getting all users to bypass RLS policies
+            var clientToUse = _adminClient ?? _client;
+
+            var res = await clientToUse.Postgrest
                 .Table<User>()
                 .Get();
 
@@ -151,7 +157,10 @@ namespace CookingRecipesWeb.Services
 
         public async Task<List<Favorite>> GetAllFavoritesAsync()
         {
-            var res = await _client.Postgrest
+            // Use admin client for admin operations to bypass RLS
+            var clientToUse = _adminClient ?? _client;
+
+            var res = await clientToUse.Postgrest
                 .Table<Favorite>()
                 .Get();
 
@@ -162,11 +171,34 @@ namespace CookingRecipesWeb.Services
         {
             try
             {
-                await _client.Postgrest
+                // Use admin client for updating user roles to bypass RLS policies
+                var clientToUse = _adminClient ?? _client;
+
+                await clientToUse.Postgrest
                     .Table<User>()
                     .Filter("id", Supabase.Postgrest.Constants.Operator.Equals, userId)
                     .Set(u => u.Role, role)
                     .Update();
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> DeleteUserAsync(string userId)
+        {
+            try
+            {
+                // Use admin client for deleting users to bypass RLS policies
+                var clientToUse = _adminClient ?? _client;
+
+                await clientToUse.Postgrest
+                    .Table<User>()
+                    .Filter("id", Supabase.Postgrest.Constants.Operator.Equals, userId)
+                    .Delete();
 
                 return true;
             }

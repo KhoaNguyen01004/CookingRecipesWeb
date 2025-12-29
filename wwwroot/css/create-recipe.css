@@ -22,6 +22,8 @@
     /* Touch-friendly */
     font-size: 16px;
     /* Prevent zoom on iOS */
+    position: relative;
+    z-index: 100;
 }
 
 .form-control {
@@ -85,8 +87,8 @@
 
 .sticky-add-btn {
     position: sticky;
-    bottom: 1rem;
-    z-index: 10;
+    bottom: 2rem;
+    z-index: 1000;
     margin-top: 1rem;
 }
 
@@ -117,7 +119,7 @@
 }
 
 .option-btn {
-    background: var(--bs-light);
+    background: var(--bs-secondary-bg);
     border: 1px solid var(--bs-border-color);
     color: var(--bs-body-color);
     padding: 0.5rem 0.75rem;
@@ -130,19 +132,22 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+    z-index: 10;
 }
 
 .option-btn:hover,
 .option-btn:focus {
-    background: #e9ecef;
-    border-color: #adb5bd;
+    background: var(--bs-primary);
+    border-color: var(--bs-primary);
+    color: var(--bs-light);
     outline: none;
 }
 
 .option-btn.selected {
-    background: #007bff;
-    border-color: #007bff;
-    color: white;
+    background: var(--bs-primary);
+    border-color: var(--bs-primary);
+    color: var(--bs-light);
 }
 
 .selected-chips {

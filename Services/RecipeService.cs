@@ -91,12 +91,27 @@ namespace CookingRecipesWeb.Services
             response.EnsureSuccessStatusCode();
 
             var json = await response.Content.ReadAsStringAsync();
-            var data = JsonSerializer.Deserialize<
-                MealDBResponse<MealDBRecipe>
-            >(json, _jsonOptions);
 
-            var meal = data?.Meals?.FirstOrDefault();
-            return meal == null ? null : MapMealDBRecipeToRecipe(meal);
+            // Check if the response contains valid data
+            if (string.IsNullOrWhiteSpace(json) || json.Contains("\"meals\":null") || json.Contains("\"meals\": null"))
+            {
+                return null;
+            }
+
+            try
+            {
+                var data = JsonSerializer.Deserialize<
+                    MealDBResponse<MealDBRecipe>
+                >(json, _jsonOptions);
+
+                var meal = data?.Meals?.FirstOrDefault();
+                return meal == null ? null : MapMealDBRecipeToRecipe(meal);
+            }
+            catch (JsonException)
+            {
+                // If deserialization fails, return null
+                return null;
+            }
         }
 
         public async Task<List<Recipe>> SearchRecipesAsync(string query)
@@ -212,6 +227,16 @@ namespace CookingRecipesWeb.Services
                 .Delete();
 
             return true;
+        }
+
+        public async Task<Recipe?> GetRecipeByIdFromDbAsync(string id)
+        {
+            var response = await _supabase
+                .From<Recipe>()
+                .Where(r => r.Id == id)
+                .Get();
+
+            return response.Models.FirstOrDefault();
         }
 
         // =======================
@@ -391,6 +416,224 @@ namespace CookingRecipesWeb.Services
                 StrCreativeCommonsConfirmed = recipe.StrCreativeCommonsConfirmed,
                 DateModified = recipe.DateModified
             };
+        }
+
+        // =======================
+        // RATINGS
+        // =======================
+
+        public async Task<List<Rating>> GetRatingsByRecipeIdAsync(string recipeId)
+        {
+            var response = await _supabase
+                .From<Rating>()
+                .Where(r => r.RecipeId == recipeId)
+                .Get();
+
+            return response.Models;
+        }
+
+        public async Task<Rating?> GetUserRatingAsync(Guid userId, string recipeId)
+        {
+            var response = await _supabase
+                .From<Rating>()
+                .Where(r => r.UserId == userId && r.RecipeId == recipeId)
+                .Get();
+
+            return response.Models.FirstOrDefault();
+        }
+
+        public async Task<bool> SubmitRatingAsync(Guid userId, string recipeId, int ratingValue)
+        {
+            var existingRating = await GetUserRatingAsync(userId, recipeId);
+            if (existingRating != null)
+            {
+                // Update existing rating
+                existingRating.RatingValue = ratingValue;
+                existingRating.UpdatedAt = DateTime.UtcNow;
+
+                var updateResponse = await _supabase
+                    .From<Rating>()
+                    .Where(r => r.Id == existingRating.Id)
+                    .Update(existingRating);
+
+                return updateResponse.ResponseMessage?.IsSuccessStatusCode == true;
+            }
+            else
+            {
+                // Create new rating
+                var newRating = new Rating
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = userId,
+                    RecipeId = recipeId,
+                    RatingValue = ratingValue,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+
+                var insertResponse = await _supabase.From<Rating>().Insert(newRating);
+                return insertResponse.ResponseMessage?.IsSuccessStatusCode == true;
+            }
+        }
+
+        // =======================
+        // REVIEWS
+        // =======================
+
+        public async Task<List<Review>> GetReviewsByRecipeIdAsync(string recipeId)
+        {
+            var response = await _supabase
+                .From<Review>()
+                .Where(r => r.RecipeId == recipeId)
+                .Order(r => r.CreatedAt, Supabase.Postgrest.Constants.Ordering.Descending)
+                .Get();
+
+            return response.Models;
+        }
+
+        public async Task<Review?> GetUserReviewAsync(Guid userId, string recipeId)
+        {
+            var response = await _supabase
+                .From<Review>()
+                .Where(r => r.UserId == userId && r.RecipeId == recipeId)
+                .Get();
+
+            return response.Models.FirstOrDefault();
+        }
+
+        public async Task<bool> SubmitReviewAsync(Guid userId, string recipeId, string reviewText)
+        {
+            var existingReview = await GetUserReviewAsync(userId, recipeId);
+            if (existingReview != null)
+            {
+                // Update existing review
+                existingReview.ReviewText = reviewText;
+                existingReview.UpdatedAt = DateTime.UtcNow;
+
+                var updateResponse = await _supabase
+                    .From<Review>()
+                    .Where(r => r.Id == existingReview.Id)
+                    .Update(existingReview);
+
+                return updateResponse.ResponseMessage?.IsSuccessStatusCode == true;
+            }
+            else
+            {
+                // Create new review
+                var newReview = new Review
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = userId,
+                    RecipeId = recipeId,
+                    ReviewText = reviewText,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+
+                var insertResponse = await _supabase.From<Review>().Insert(newReview);
+                return insertResponse.ResponseMessage?.IsSuccessStatusCode == true;
+            }
+        }
+
+        public async Task<List<ReviewReply>> GetReviewRepliesByReviewIdAsync(Guid reviewId)
+        {
+            var response = await _supabase
+                .From<ReviewReply>()
+                .Where(r => r.ParentReviewId == reviewId)
+                .Order(r => r.CreatedAt, Supabase.Postgrest.Constants.Ordering.Ascending)
+                .Get();
+
+            return response.Models;
+        }
+
+        public async Task<bool> SubmitReviewReplyAsync(Guid userId, Guid parentReviewId, string replyText)
+        {
+            var newReply = new ReviewReply
+            {
+                Id = Guid.NewGuid(),
+                ParentReviewId = parentReviewId,
+                UserId = userId,
+                ReplyText = replyText,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            var insertResponse = await _supabase.From<ReviewReply>().Insert(newReply);
+            return insertResponse.ResponseMessage?.IsSuccessStatusCode == true;
+        }
+
+        public async Task<ReviewReply?> GetReviewReplyByIdAsync(Guid replyId)
+        {
+            var response = await _supabase
+                .From<ReviewReply>()
+                .Where(r => r.Id == replyId)
+                .Get();
+
+            return response.Models.FirstOrDefault();
+        }
+
+        public async Task<bool> DeleteReviewReplyAsync(Guid replyId, Guid userId)
+        {
+            var reply = await _supabase
+                .From<ReviewReply>()
+                .Where(r => r.Id == replyId && r.UserId == userId)
+                .Get();
+
+            if (!reply.Models.Any())
+            {
+                return false; // Reply not found or not owned by user
+            }
+
+            await _supabase
+                .From<ReviewReply>()
+                .Where(r => r.Id == replyId)
+                .Delete();
+
+            return true;
+        }
+
+        public async Task<bool> EditReviewAsync(Guid reviewId, Guid userId, string reviewText)
+        {
+            var review = await _supabase
+                .From<Review>()
+                .Where(r => r.Id == reviewId && r.UserId == userId)
+                .Get();
+
+            if (!review.Models.Any())
+            {
+                return false; // Review not found or not owned by user
+            }
+
+            var existingReview = review.Models.First();
+            existingReview.ReviewText = reviewText;
+            existingReview.UpdatedAt = DateTime.UtcNow;
+
+            var updateResponse = await _supabase
+                .From<Review>()
+                .Where(r => r.Id == reviewId)
+                .Update(existingReview);
+
+            return updateResponse.ResponseMessage?.IsSuccessStatusCode == true;
+        }
+
+        public async Task<bool> DeleteReviewAsync(Guid reviewId, Guid userId)
+        {
+            var review = await _supabase
+                .From<Review>()
+                .Where(r => r.Id == reviewId && r.UserId == userId)
+                .Get();
+
+            if (!review.Models.Any())
+            {
+                return false; // Review not found or not owned by user
+            }
+
+            await _supabase
+                .From<Review>()
+                .Where(r => r.Id == reviewId)
+                .Delete();
+
+            return true;
         }
     }
 }

@@ -1,0 +1,26 @@
+@model CookingRecipesWeb.Models.Category
+
+@{
+    ViewData["Title"] = "Create Category";
+}
+
+<div class="container">
+    <h1 class="my-4">Create Category</h1>
+
+    <form asp-action="CreateCategory" method="post">
+        <div class="form-group">
+            <label asp-for="Name">Category Name</label>
+            <input asp-for="Name" class="form-control" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="ThumbnailUrl">Image URL</label>
+            <input asp-for="ThumbnailUrl" class="form-control" />
+            <span asp-validation-for="ThumbnailUrl" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Create Category</button>
+        <a href="@Url.Action("ManageCategories", "Admin")" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>

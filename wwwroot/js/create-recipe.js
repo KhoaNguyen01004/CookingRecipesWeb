@@ -1,8 +1,16 @@
+let stepCount = 0;
+const ingredients = [];
+const measures = [];
+const selectedCategories = [];
+const selectedAreas = [];
+
 document.addEventListener('DOMContentLoaded', function () {
-    let stepCount = 0;
-    const ingredients = [];
-    const selectedCategories = [];
-    const selectedAreas = [];
+
+    // Auto-focus on first field
+    const mealInput = document.getElementById('StrMeal');
+    if (mealInput) {
+        mealInput.focus();
+    }
 
     // Load categories and areas
     loadCategories();
@@ -13,21 +21,52 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Ingredient input handling
     const ingredientInput = document.getElementById('ingredient-input');
-    ingredientInput.addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            const ingredient = this.value.trim();
-            if (ingredient) {
-                addIngredient(ingredient);
-                this.value = '';
-            }
+    const measureInput = document.getElementById('measure-input');
+    const addIngredientBtn = document.getElementById('add-ingredient-btn');
+
+    function addIngredientFromInputs() {
+        if (!ingredientInput || !measureInput) return;
+        const ingredient = ingredientInput.value.trim();
+        const measure = measureInput.value.trim();
+        if (ingredient) {
+            addIngredient(ingredient, measure);
+            ingredientInput.value = '';
+            measureInput.value = '';
+            if (ingredientInput) ingredientInput.focus();
         }
-    });
+    }
+
+    if (ingredientInput) {
+        ingredientInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addIngredientFromInputs();
+            }
+        });
+    }
+
+    if (measureInput) {
+        measureInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addIngredientFromInputs();
+            }
+        });
+    }
+
+    if (addIngredientBtn) {
+        addIngredientBtn.addEventListener('click', function () {
+            addIngredientFromInputs();
+        });
+    }
 
     // Add step button
-    document.getElementById('add-step').addEventListener('click', function () {
-        addStep();
-    });
+    const addStepBtn = document.getElementById('add-step');
+    if (addStepBtn) {
+        addStepBtn.addEventListener('click', function () {
+            addStep();
+        });
+    }
 
     // Image preview
     const imageInput = document.querySelector('input[name="StrMealThumb"]');
@@ -78,28 +117,83 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Add category modal
-    document.getElementById('add-category-btn').addEventListener('click', function () {
-        console.log('Add category button clicked');
-        const modal = new bootstrap.Modal(document.getElementById('addCategoryModal'));
-        modal.show();
-    });
+    const addCategoryBtn = document.getElementById('add-category-btn');
+    if (addCategoryBtn) {
+        addCategoryBtn.addEventListener('click', function () {
+            const modal = new bootstrap.Modal(document.getElementById('addCategoryModal'));
+            modal.show();
+        });
+    }
 
     // Save category
-    document.getElementById('save-category-btn').addEventListener('click', function () {
-        const categoryName = document.getElementById('category-name-input').value.trim();
-        const categoryImageUrl = document.getElementById('category-image-input').value.trim();
-        const categoryDescription = document.getElementById('category-description-input').value.trim();
-        if (categoryName) {
-            saveCategory(categoryName, categoryImageUrl, categoryDescription);
-        }
-    });
+    const saveCategoryBtn = document.getElementById('save-category-btn');
+    if (saveCategoryBtn) {
+        saveCategoryBtn.addEventListener('click', function () {
+            const categoryName = document.getElementById('category-name-input').value.trim();
+            const categoryImageUrl = document.getElementById('category-image-input').value.trim();
+            const categoryDescription = document.getElementById('category-description-input').value.trim();
+            if (categoryName) {
+                saveCategory(categoryName, categoryImageUrl, categoryDescription);
+            }
+        });
+    }
 
     // Form submission
     document.getElementById('recipe-form').addEventListener('submit', function (e) {
+        // Validation
+        const mealName = document.getElementById('StrMeal').value.trim();
+        const stepInputs = document.querySelectorAll('.step-input');
+        let isValid = true;
+        let errorMessage = '';
+
+        if (!mealName) {
+            isValid = false;
+            errorMessage = 'Recipe name is required.';
+        } else if (selectedCategories.length === 0) {
+            isValid = false;
+            errorMessage = 'At least one category must be selected.';
+        } else if (selectedAreas.length === 0) {
+            isValid = false;
+            errorMessage = 'Area must be selected.';
+        } else if (ingredients.length === 0) {
+            isValid = false;
+            errorMessage = 'At least one ingredient must be added.';
+        } else {
+            // Check if all steps are filled
+            for (let input of stepInputs) {
+                if (!input.value.trim()) {
+                    isValid = false;
+                    errorMessage = 'All cooking steps must be filled.';
+                    break;
+                }
+            }
+        }
+
+        if (!isValid) {
+            e.preventDefault();
+            alert(errorMessage);
+            return;
+        }
+
         // Set hidden fields
-        document.getElementById('selected-categories').value = selectedCategories.join(',');
-        document.getElementById('selected-areas').value = selectedAreas.join(',');
+        // Clear existing category inputs
+        document.querySelectorAll('input[name="SelectedCategoryIds"]').forEach(input => input.remove());
+        // Create hidden inputs for each selected category
+        selectedCategories.forEach(categoryId => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'SelectedCategoryIds';
+            input.value = categoryId;
+            document.getElementById('recipe-form').appendChild(input);
+        });
+        document.getElementById('selected-areas').value = selectedAreas.length > 0 ? selectedAreas[0] : '';
         document.getElementById('ingredients-list').value = ingredients.join(',');
+        document.getElementById('measures-list').value = measures.join(',');
+
+        // Combine steps into instructions
+        const stepsInputs = document.querySelectorAll('.step-input');
+        const steps = Array.from(stepsInputs).map(input => input.value.trim()).filter(step => step);
+        document.getElementById('steps-list').value = steps.join('\n');
     });
 });
 
@@ -110,6 +204,7 @@ function loadCategories() {
     fetch('/Admin/GetCategories')
         .then(response => response.json())
         .then(data => {
+            console.log('Loaded categories:', data);
             container.innerHTML = '';
             data.forEach(category => {
                 const card = document.createElement('div');
@@ -123,7 +218,9 @@ function loadCategories() {
                 `;
 
                 container.appendChild(card);
+                console.log(`Added category: ${category.name} (API: ${category.isFromApi})`);
             });
+            console.log(`Total categories displayed: ${data.length}`);
         })
         .catch(error => {
             console.error('Error loading categories:', error);
@@ -140,9 +237,9 @@ function loadAreas() {
             data.forEach(area => {
                 const btn = document.createElement('button');
                 btn.type = 'button';
-                btn.className = 'option-btn';
-                btn.dataset.id = area.id;
-                btn.textContent = area.name;
+                btn.className = 'option-btn api-category'; // Add theme class
+                btn.dataset.id = area;
+                btn.textContent = area;
                 container.appendChild(btn);
             });
         });
@@ -176,9 +273,10 @@ function updateStepNumbers() {
     stepCount = stepItems.length;
 }
 
-function addIngredient(ingredient) {
+function addIngredient(ingredient, measure = '') {
     if (!ingredients.includes(ingredient)) {
         ingredients.push(ingredient);
+        measures.push(measure);
         updateIngredientsDisplay();
     }
 }
@@ -186,19 +284,23 @@ function addIngredient(ingredient) {
 function updateIngredientsDisplay() {
     const container = document.getElementById('ingredients-tags');
     container.innerHTML = '';
-    ingredients.forEach(ing => {
+    ingredients.forEach((ing, index) => {
+        const measure = measures[index] || '';
+        const displayText = measure ? `${ing} (${measure})` : ing;
         const tag = document.createElement('span');
         tag.className = 'ingredient-tag';
-        tag.innerHTML = `${ing} <span class="remove-tag" onclick="removeIngredient('${ing}')">×</span>`;
+        tag.innerHTML = `${displayText} <span class="remove-tag" onclick="removeIngredient('${ing}')">×</span>`;
         container.appendChild(tag);
     });
     document.getElementById('ingredients-list').value = ingredients.join(',');
+    document.getElementById('measures-list').value = measures.join(',');
 }
 
 function removeIngredient(ingredient) {
     const index = ingredients.indexOf(ingredient);
     if (index > -1) {
         ingredients.splice(index, 1);
+        measures.splice(index, 1);
         updateIngredientsDisplay();
     }
 }
