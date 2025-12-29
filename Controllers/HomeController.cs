@@ -131,13 +131,27 @@ namespace CookingRecipesWeb.Controllers
 
         public async Task<IActionResult> RandomDish()
         {
-            // Force refresh when getting random dish
-            var recipes = await _recipeService.GetApiRecipesAsync(1, forceRefresh: true);
-            if (recipes != null && recipes.Any())
+            try
             {
-                return RedirectToAction("RecipeDetails", new { id = recipes.First().Id });
+                // Force refresh when getting random dish
+                var recipes = await _recipeService.GetApiRecipesAsync(1, forceRefresh: true);
+                if (recipes != null && recipes.Any())
+                {
+                    return RedirectToAction("RecipeDetails", new { id = recipes.First().Id });
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = "Unable to fetch a random recipe at this time. Please try again later.";
+                    return RedirectToAction("Index");
+                }
             }
-            return RedirectToAction("Index");
+            catch (Exception ex)
+            {
+                // Log the error
+                Console.WriteLine($"Error in RandomDish: {ex.Message}");
+                TempData["ErrorMessage"] = "Unable to fetch a random recipe at this time. Please try again later.";
+                return RedirectToAction("Index");
+            }
         }
 
         [HttpPost]
@@ -161,16 +175,18 @@ namespace CookingRecipesWeb.Controllers
                     return Json(new { success = false, message = "Invalid recipe ID" });
                 }
 
-                var isFavorite = await _userService.IsFavoriteAsync(userId, recipeId);
+                var accessToken = HttpContext.Session.GetString("AccessToken");
+                var refreshToken = HttpContext.Session.GetString("RefreshToken");
+                var isFavorite = await _userService.IsFavoriteAsync(userId, recipeId, accessToken, refreshToken);
 
                 if (isFavorite)
                 {
-                    await _userService.RemoveFavoriteAsync(userId, recipeId);
+                    await _userService.RemoveFavoriteAsync(userId, recipeId, accessToken, refreshToken);
                     return Json(new { success = true, isFavorite = false });
                 }
                 else
                 {
-                    await _userService.AddFavoriteAsync(userId, recipeId);
+                    await _userService.AddFavoriteAsync(userId, recipeId, accessToken, refreshToken);
                     return Json(new { success = true, isFavorite = true });
                 }
             }
@@ -192,7 +208,9 @@ namespace CookingRecipesWeb.Controllers
             }
 
             var userId = Guid.Parse(userIdString);
-            var isFavorite = await _userService.IsFavoriteAsync(userId, recipeId);
+            var accessToken = HttpContext.Session.GetString("AccessToken");
+            var refreshToken = HttpContext.Session.GetString("RefreshToken");
+            var isFavorite = await _userService.IsFavoriteAsync(userId, recipeId, accessToken, refreshToken);
             return Json(isFavorite);
         }
 

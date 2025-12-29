@@ -82,6 +82,8 @@ namespace CookingRecipesWeb.Controllers
                 HttpContext.Session.SetString("UserEmail", email);
                 HttpContext.Session.SetString("FirstName", user.FirstName ?? "");
                 HttpContext.Session.SetString("UserRole", user.Role ?? "user");
+                HttpContext.Session.SetString("AccessToken", session.AccessToken ?? "");
+                HttpContext.Session.SetString("RefreshToken", session.RefreshToken ?? "");
 
                 _logger.LogInformation("Login successful, redirecting to home");
 
@@ -101,6 +103,10 @@ namespace CookingRecipesWeb.Controllers
         [HttpGet]
         public IActionResult Register()
         {
+            // Preserve form data on error
+            ViewData["FirstName"] = TempData["FirstName"];
+            ViewData["LastName"] = TempData["LastName"];
+            ViewData["Email"] = TempData["Email"];
             return View();
         }
 
@@ -119,6 +125,9 @@ namespace CookingRecipesWeb.Controllers
             if (password != confirmPassword)
             {
                 TempData["ErrorMessage"] = "Passwords do not match.";
+                TempData["FirstName"] = firstName;
+                TempData["LastName"] = lastName;
+                TempData["Email"] = email;
                 return RedirectToAction("Register");
             }
 
@@ -126,10 +135,34 @@ namespace CookingRecipesWeb.Controllers
             if (!await VerifyCaptchaToken(captchaToken))
             {
                 TempData["ErrorMessage"] = "Captcha verification failed.";
+                TempData["FirstName"] = firstName;
+                TempData["LastName"] = lastName;
+                TempData["Email"] = email;
                 return RedirectToAction("Register");
             }
 
-            var session = await _client.Auth.SignUp(email, password);
+            Supabase.Gotrue.Session session;
+            try
+            {
+                session = await _client.Auth.SignUp(email, password);
+            }
+            catch (Supabase.Gotrue.Exceptions.GotrueException ex)
+            {
+                _logger.LogError(ex, $"Registration failed for email: {email}");
+                // Parse the error message for user-friendly display
+                if (ex.Message.Contains("weak_password"))
+                {
+                    TempData["ErrorMessage"] = "Password is too weak. It must be at least 6 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character.";
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = "Registration failed. Please try again.";
+                }
+                TempData["FirstName"] = firstName;
+                TempData["LastName"] = lastName;
+                TempData["Email"] = email;
+                return RedirectToAction("Register");
+            }
 
             if (session?.User == null)
             {
@@ -137,19 +170,52 @@ namespace CookingRecipesWeb.Controllers
                 return RedirectToAction("Register");
             }
 
-            await _userService.CreateUserAsync(new User
+            try
             {
-                Id = Guid.Parse(session.User.Id ?? throw new InvalidOperationException("User ID is null")),
-                FirstName = firstName,
-                LastName = lastName,
-                Email = email,
-                Role = "user" // Default role for new users
-            });
+                _logger.LogInformation($"Attempting to create user profile for email: {email} with ID: {session.User.Id}");
+                await _userService.CreateUserAsync(new User
+                {
+                    Id = Guid.Parse(session.User.Id ?? throw new InvalidOperationException("User ID is null")),
+                    FirstName = firstName,
+                    LastName = lastName,
+                    Email = email,
+                    Role = "user" // Default role for new users
+                }, session.AccessToken, session.RefreshToken);
+                _logger.LogInformation($"Successfully created user profile for email: {email}");
+            }
+            catch (Supabase.Postgrest.Exceptions.PostgrestException ex)
+            {
+                _logger.LogError(ex, $"Failed to create user profile for email: {email}. Error: {ex.Message}");
+                TempData["ErrorMessage"] = $"Registration completed, but failed to create user profile. Error: {ex.Message}";
+                // Still set session since auth succeeded
+                HttpContext.Session.SetString("UserId", session.User.Id);
+                HttpContext.Session.SetString("UserEmail", email);
+                HttpContext.Session.SetString("FirstName", firstName);
+                HttpContext.Session.SetString("UserRole", "user");
+                HttpContext.Session.SetString("AccessToken", session.AccessToken ?? "");
+                HttpContext.Session.SetString("RefreshToken", session.RefreshToken ?? "");
+                return RedirectToAction("Index", "Home");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Unexpected error creating user profile for email: {email}. Error: {ex.Message}");
+                TempData["ErrorMessage"] = $"Registration completed, but failed to create user profile. Unexpected error: {ex.Message}";
+                // Still set session since auth succeeded
+                HttpContext.Session.SetString("UserId", session.User.Id);
+                HttpContext.Session.SetString("UserEmail", email);
+                HttpContext.Session.SetString("FirstName", firstName);
+                HttpContext.Session.SetString("UserRole", "user");
+                HttpContext.Session.SetString("AccessToken", session.AccessToken ?? "");
+                HttpContext.Session.SetString("RefreshToken", session.RefreshToken ?? "");
+                return RedirectToAction("Index", "Home");
+            }
 
             HttpContext.Session.SetString("UserId", session.User.Id);
             HttpContext.Session.SetString("UserEmail", email);
             HttpContext.Session.SetString("FirstName", firstName);
             HttpContext.Session.SetString("UserRole", "user");
+            HttpContext.Session.SetString("AccessToken", session.AccessToken ?? "");
+            HttpContext.Session.SetString("RefreshToken", session.RefreshToken ?? "");
 
             return RedirectToAction("Index", "Home");
         }

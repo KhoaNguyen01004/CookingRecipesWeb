@@ -86,3 +86,78 @@ CREATE TABLE public.users (
   role text NOT NULL DEFAULT 'user'::text CHECK (role = ANY (ARRAY['user'::text, 'admin'::text])),
   CONSTRAINT users_pkey PRIMARY KEY (id)
 );
+
+-- Enable RLS for all tables
+ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.favorites ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.recipes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.recipe_categories ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.recipe_areas ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.recipe_ingredients ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.recipe_steps ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.ingredients ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.areas ENABLE ROW LEVEL SECURITY;
+
+-- USERS
+CREATE POLICY "users_select_self_or_admin" ON public.users
+  FOR SELECT USING (id = auth.uid() OR role = 'admin');
+CREATE POLICY "users_manage_admin" ON public.users
+  FOR ALL USING (role = 'admin');
+
+CREATE POLICY "users_insert_self"
+  ON public.users
+  FOR INSERT
+  WITH CHECK (true);
+
+-- FAVORITES
+CREATE POLICY "favorites_manage_own_or_admin" ON public.favorites
+  FOR ALL USING (user_id = auth.uid() OR EXISTS(SELECT 1 FROM public.users u WHERE u.id = auth.uid() AND u.role='admin'));
+
+-- RECIPES
+CREATE POLICY "recipes_select_all" ON public.recipes
+  FOR SELECT USING (true);
+CREATE POLICY "recipes_manage_admin" ON public.recipes
+  FOR ALL USING (EXISTS(SELECT 1 FROM public.users u WHERE u.id = auth.uid() AND u.role='admin'));
+
+-- CATEGORIES
+CREATE POLICY "categories_select_all" ON public.categories
+  FOR SELECT USING (true);
+CREATE POLICY "categories_manage_admin" ON public.categories
+  FOR ALL USING (EXISTS(SELECT 1 FROM public.users u WHERE u.id = auth.uid() AND u.role='admin'));
+
+-- RECIPE_CATEGORIES
+CREATE POLICY "recipe_categories_select_all" ON public.recipe_categories
+  FOR SELECT USING (true);
+CREATE POLICY "recipe_categories_manage_admin" ON public.recipe_categories
+  FOR ALL USING (EXISTS(SELECT 1 FROM public.users u WHERE u.id = auth.uid() AND u.role='admin'));
+
+-- RECIPE_AREAS
+CREATE POLICY "recipe_areas_select_all" ON public.recipe_areas
+  FOR SELECT USING (true);
+CREATE POLICY "recipe_areas_manage_admin" ON public.recipe_areas
+  FOR ALL USING (EXISTS(SELECT 1 FROM public.users u WHERE u.id = auth.uid() AND u.role='admin'));
+
+-- RECIPE_INGREDIENTS
+CREATE POLICY "recipe_ingredients_select_all" ON public.recipe_ingredients
+  FOR SELECT USING (true);
+CREATE POLICY "recipe_ingredients_manage_admin" ON public.recipe_ingredients
+  FOR ALL USING (EXISTS(SELECT 1 FROM public.users u WHERE u.id = auth.uid() AND u.role='admin'));
+
+-- RECIPE_STEPS
+CREATE POLICY "recipe_steps_select_all" ON public.recipe_steps
+  FOR SELECT USING (true);
+CREATE POLICY "recipe_steps_manage_admin" ON public.recipe_steps
+  FOR ALL USING (EXISTS(SELECT 1 FROM public.users u WHERE u.id = auth.uid() AND u.role='admin'));
+
+-- INGREDIENTS
+CREATE POLICY "ingredients_select_all" ON public.ingredients
+  FOR SELECT USING (true);
+CREATE POLICY "ingredients_manage_admin" ON public.ingredients
+  FOR ALL USING (EXISTS(SELECT 1 FROM public.users u WHERE u.id = auth.uid() AND u.role='admin'));
+
+-- AREAS
+CREATE POLICY "areas_select_all" ON public.areas
+  FOR SELECT USING (true);
+CREATE POLICY "areas_manage_admin" ON public.areas
+  FOR ALL USING (EXISTS(SELECT 1 FROM public.users u WHERE u.id = auth.uid() AND u.role='admin'));

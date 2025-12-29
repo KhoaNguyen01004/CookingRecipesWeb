@@ -1,4 +1,7 @@
-﻿var builder = WebApplication.CreateBuilder(args);
+﻿using CookingRecipesWeb.Services;
+using Supabase;
+
+var builder = WebApplication.CreateBuilder(args);
 
 // =======================
 // MVC + Session
@@ -43,7 +46,12 @@ builder.Services.AddSingleton(_ =>
 // APP SERVICES
 // =======================
 builder.Services.AddScoped<CookingRecipesWeb.Services.RecipeService>();
-builder.Services.AddScoped<CookingRecipesWeb.Services.UserService>();
+builder.Services.AddScoped<CookingRecipesWeb.Services.UserService>(provider =>
+    new CookingRecipesWeb.Services.UserService(
+        provider.GetRequiredService<Supabase.Client>(),
+        provider.GetRequiredService<IConfiguration>(),
+        provider.GetRequiredService<ILogger<CookingRecipesWeb.Services.UserService>>()
+    ));
 
 var app = builder.Build();
 

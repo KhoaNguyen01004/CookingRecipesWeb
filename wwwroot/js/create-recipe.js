@@ -79,6 +79,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Add category modal
     document.getElementById('add-category-btn').addEventListener('click', function () {
+        console.log('Add category button clicked');
         const modal = new bootstrap.Modal(document.getElementById('addCategoryModal'));
         modal.show();
     });
@@ -117,12 +118,7 @@ function loadCategories() {
                 card.dataset.isFromApi = category.isFromApi;
                 card.tabIndex = 0; // Make focusable
 
-                const thumbnail = category.thumbnailUrl
-                    ? `<img src="${category.thumbnailUrl}" alt="${category.name}" class="category-thumbnail" onerror="this.src='/images/placeholder-category.png'">`
-                    : '<div class="category-thumbnail d-flex align-items-center justify-content-center"><i class="fas fa-utensils fa-2x text-muted"></i></div>';
-
                 card.innerHTML = `
-                    ${thumbnail}
                     <div class="category-name">${category.name}</div>
                 `;
 
