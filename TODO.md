@@ -1,17 +1,13 @@
-# TODO List for Fixing Issues
+# TODO: Refactor Authentication Pages for Standard hCaptcha
 
-## 1. Fix Favorite Button Functionality
-- [x] Add error handling and logging to ToggleFavorite method in HomeController.cs
-- [x] Test favorite button after changes
+## Steps to Complete
 
-## 2. Fix Favorite List Page Errors
-- [x] Update MyFavorites action to handle missing recipes gracefully
-- [x] Test MyFavorites page after changes
-
-## 3. Populate Privacy Page
-- [x] Replace placeholder text in Views/Home/Privacy.cshtml with standard privacy policy content
-- [x] Verify privacy page displays correctly
-
-## 4. Fix Dark Mode Visibility Issues
-- [x] Update wwwroot/css/site.css to ensure buttons and text are visible in both modes
-- [x] Test dark mode toggle for visibility issues
+- [x] Update Views/Account/Login.cshtml: Add hCaptcha script tag in @section Scripts.
+- [x] Update Views/Account/Register.cshtml: Add hCaptcha script tag in @section Scripts.
+- [x] Update wwwroot/js/login.js: Replace React code with standard hCaptcha, add form submit handler to copy .h-captcha-response to captchaToken.
+- [x] Update wwwroot/js/register.js: Replace React code with standard hCaptcha, add form submit handler to copy .h-captcha-response to captchaToken.
+- [x] Update wwwroot/js/reset-password.js: Add dummy token for localhost testing.
+- [x] Add debug logs to JavaScript for localhost testing.
+- [x] Update TODO.md: Mark tasks as completed.
+- [ ] Test login, register, and reset password pages with hCaptcha.
+- [ ] Verify debug logs show token submission on localhost.

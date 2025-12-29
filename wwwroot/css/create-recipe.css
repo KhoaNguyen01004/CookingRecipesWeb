@@ -1,0 +1,266 @@
+/* Mobile-first CSS for Create Recipe Form */
+.recipe-form-section {
+    margin-bottom: 2rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.recipe-form-section:last-child {
+    border-bottom: none;
+}
+
+.section-title {
+    font-weight: bold;
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+    color: var(--bs-body-color);
+}
+
+.form-control,
+.btn {
+    min-height: 44px;
+    /* Touch-friendly */
+    font-size: 16px;
+    /* Prevent zoom on iOS */
+}
+
+.form-control {
+    width: 100%;
+    /* Full width on mobile */
+}
+
+.selectpicker {
+    width: 100% !important;
+}
+
+.ingredient-tag {
+    display: inline-block;
+    background: #007bff;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    margin: 0.25rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+}
+
+.ingredient-tag .remove-tag {
+    margin-left: 0.5rem;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.step-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.step-number {
+    min-width: 2rem;
+    font-weight: bold;
+    color: var(--bs-secondary-color);
+}
+
+.step-input {
+    flex: 1;
+    margin-right: 0.5rem;
+}
+
+.remove-step {
+    min-width: 44px;
+    height: 44px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.image-preview {
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.5rem;
+    margin-top: 0.5rem;
+    display: none;
+}
+
+.sticky-add-btn {
+    position: sticky;
+    bottom: 1rem;
+    z-index: 10;
+    margin-top: 1rem;
+}
+
+.submit-btn {
+    width: 100%;
+    margin-bottom: 0.5rem;
+}
+
+.cancel-btn {
+    width: 100%;
+}
+
+.sticky-submit-section {
+    position: sticky;
+    bottom: 0;
+    background: var(--bs-body-bg);
+    padding: 1rem 0;
+    border-top: 1px solid var(--bs-border-color);
+    z-index: 10;
+}
+
+/* New styles for tag/chip-based selection */
+.options-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.option-btn {
+    background: var(--bs-light);
+    border: 1px solid var(--bs-border-color);
+    color: var(--bs-body-color);
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 44px;
+    /* Touch-friendly */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.option-btn:hover,
+.option-btn:focus {
+    background: #e9ecef;
+    border-color: #adb5bd;
+    outline: none;
+}
+
+.option-btn.selected {
+    background: #007bff;
+    border-color: #007bff;
+    color: white;
+}
+
+.selected-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    min-height: 2rem;
+    padding: 0.5rem;
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    background: #f8f9fa;
+}
+
+.selected-chip {
+    display: inline-flex;
+    align-items: center;
+    background: #007bff;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+}
+
+.selected-chip .chip-text {
+    margin-right: 0.5rem;
+}
+
+.selected-chip .remove-chip {
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1rem;
+    line-height: 1;
+    padding: 0 0.25rem;
+}
+
+.selected-chip .remove-chip:hover {
+    color: #ffc107;
+}
+
+/* Modal theme compatibility */
+.modal-content {
+    background-color: var(--bs-body-bg);
+    color: var(--bs-body-color);
+}
+
+.modal-header {
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+.modal-body {
+    background-color: var(--bs-body-bg);
+}
+
+.modal-footer {
+    border-top: 1px solid var(--bs-border-color);
+}
+
+.modal-title {
+    color: var(--bs-body-color);
+}
+
+.form-label {
+    color: var(--bs-body-color);
+}
+
+/* Mobile-specific adjustments */
+@media (max-width: 767px) {
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .recipe-form-section {
+        margin-bottom: 1.5rem;
+        /* Reduce spacing to minimize scrolling */
+        padding: 0.75rem 0;
+    }
+
+    .step-item {
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .step-number {
+        min-width: 2.5rem;
+        margin-top: 0.5rem;
+    }
+
+    .step-input {
+        flex: 1;
+        margin-right: 0;
+        margin-bottom: 0;
+    }
+
+    .remove-step {
+        margin-top: 0.25rem;
+        min-width: 40px;
+        height: 40px;
+    }
+
+    .options-grid {
+        justify-content: center;
+    }
+
+    .option-btn {
+        flex: 1 1 auto;
+        max-width: calc(50% - 0.25rem);
+        min-width: 120px;
+    }
+
+    .section-title {
+        margin-bottom: 0.75rem;
+        /* Reduce title spacing */
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+        /* Reduce form group spacing */
+    }
+}

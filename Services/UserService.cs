@@ -75,5 +75,41 @@ namespace CookingRecipesWeb.Services
 
             return res.Models.Any();
         }
+
+        public async Task<List<User>> GetAllUsersAsync()
+        {
+            var res = await _client.Postgrest
+                .Table<User>()
+                .Get();
+
+            return res.Models;
+        }
+
+        public async Task<List<Favorite>> GetAllFavoritesAsync()
+        {
+            var res = await _client.Postgrest
+                .Table<Favorite>()
+                .Get();
+
+            return res.Models;
+        }
+
+        public async Task<bool> UpdateUserRoleAsync(string userId, string role)
+        {
+            try
+            {
+                await _client.Postgrest
+                    .Table<User>()
+                    .Filter("id", Supabase.Postgrest.Constants.Operator.Equals, userId)
+                    .Set(u => u.Role, role)
+                    .Update();
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 }

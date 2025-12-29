@@ -15,13 +15,18 @@
             <p><strong>Area:</strong> @Model.StrArea</p>
             <h3>Ingredients</h3>
             <ul>
-                @for (int i = 1; i <= 20; i++)
+                @if (!string.IsNullOrEmpty(Model.StrIngredients) && !string.IsNullOrEmpty(Model.StrMeasures))
                 {
-                    var ingredient = Model.GetType().GetProperty($"StrIngredient{i}")?.GetValue(Model)?.ToString();
-                    var measure = Model.GetType().GetProperty($"StrMeasure{i}")?.GetValue(Model)?.ToString();
-                    if (!string.IsNullOrEmpty(ingredient))
+                    var ingredients = Model.StrIngredients.Split(',');
+                    var measures = Model.StrMeasures.Split(',');
+                    for (int i = 0; i < Math.Min(ingredients.Length, measures.Length); i++)
                     {
-                        <li>@measure @ingredient</li>
+                        var ingredient = ingredients[i]?.Trim();
+                        var measure = measures[i]?.Trim();
+                        if (!string.IsNullOrEmpty(ingredient))
+                        {
+                            <li>@measure @ingredient</li>
+                        }
                     }
                 }
             </ul>
@@ -33,7 +38,9 @@
                 var videoId = Model.StrYoutube.Split("v=")[1]?.Split("&")[0];
                 var embedUrl = $"https://www.youtube.com/embed/{videoId}";
                 <div class="ratio ratio-16x9">
-                    <iframe src="@embedUrl" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                    <iframe src="@embedUrl" title="YouTube video player" frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowfullscreen></iframe>
                 </div>
             }
         </div>
@@ -50,48 +57,5 @@
 </div>
 
 @section Scripts {
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const favoriteBtn = document.getElementById('favorite-btn');
-            const favoriteText = document.getElementById('favorite-text');
-            const recipeId = '@Model?.IdMeal';
-
-            if (favoriteBtn) {
-                // Check initial favorite status
-                fetch('/Home/IsFavorite?recipeId=' + recipeId)
-                    .then(response => response.json())
-                    .then(isFavorite => {
-                        updateFavoriteButton(isFavorite);
-                    });
-
-                favoriteBtn.addEventListener('click', function() {
-                    fetch('/Home/ToggleFavorite', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                        },
-                        body: 'recipeId=' + recipeId
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            updateFavoriteButton(data.isFavorite);
-                        }
-                    });
-                });
-            }
-
-            function updateFavoriteButton(isFavorite) {
-                if (isFavorite) {
-                    favoriteBtn.classList.remove('btn-outline-warning');
-                    favoriteBtn.classList.add('btn-warning');
-                    favoriteText.textContent = 'Remove from Favorites';
-                } else {
-                    favoriteBtn.classList.remove('btn-warning');
-                    favoriteBtn.classList.add('btn-outline-warning');
-                    favoriteText.textContent = 'Add to Favorites';
-                }
-            }
-        });
-    </script>
+    <script src="~/js/recipe-details.js" asp-append-version="true"></script>
 }

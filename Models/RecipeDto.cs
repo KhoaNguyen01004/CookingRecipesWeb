@@ -1,39 +1,20 @@
-using Supabase.Postgrest.Models;
-using Supabase.Postgrest.Attributes;
-
 namespace CookingRecipesWeb.Models
 {
-    [Table("recipes")]
-    public class Recipe : BaseModel
+    public class RecipeDto
     {
-        [PrimaryKey("id", false)]
-        [Column("id")]
         public string Id { get; set; } = string.Empty;
-        [Column("str_meal")]
         public string StrMeal { get; set; } = string.Empty;
-        [Column("str_category")]
         public string? StrCategory { get; set; }
-        [Column("str_area")]
         public string? StrArea { get; set; }
-        [Column("str_instructions")]
         public string? StrInstructions { get; set; }
-        [Column("str_meal_thumb")]
         public string? StrMealThumb { get; set; }
-        [Column("str_tags")]
         public string? StrTags { get; set; }
-        [Column("str_youtube")]
         public string? StrYoutube { get; set; }
-        [Column("str_ingredients")]
         public string? StrIngredients { get; set; }
-        [Column("str_measures")]
         public string? StrMeasures { get; set; }
-        [Column("str_source")]
         public string? StrSource { get; set; }
-        [Column("str_image_source")]
         public string? StrImageSource { get; set; }
-        [Column("str_creative_commons_confirmed")]
         public string? StrCreativeCommonsConfirmed { get; set; }
-        [Column("date_modified")]
         public string? DateModified { get; set; }
     }
 }

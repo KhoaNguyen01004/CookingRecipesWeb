@@ -1,8 +1,11 @@
 ﻿var builder = WebApplication.CreateBuilder(args);
 
+// =======================
 // MVC + Session
+// =======================
 builder.Services.AddControllersWithViews();
 builder.Services.AddMemoryCache();
+
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromHours(2);
@@ -10,12 +13,13 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-// App services
-builder.Services.AddHttpClient<CookingRecipesWeb.Services.RecipeService>();
-builder.Services.AddScoped<CookingRecipesWeb.Services.UserService>();
+// =======================
+// HTTP CLIENT (GLOBAL)
+// =======================
+builder.Services.AddHttpClient();
 
 // =======================
-// Supabase (SDK MỚI – CHUẨN)
+// SUPABASE
 // =======================
 var supabaseUrl = builder.Configuration["Supabase:Url"]
     ?? throw new InvalidOperationException("Supabase:Url not set");
@@ -23,9 +27,8 @@ var supabaseUrl = builder.Configuration["Supabase:Url"]
 var supabaseKey = builder.Configuration["Supabase:AnonKey"]
     ?? throw new InvalidOperationException("Supabase:AnonKey not set");
 
-builder.Services.AddSingleton(sp =>
-{
-    return new Supabase.Client(
+builder.Services.AddSingleton(_ =>
+    new Supabase.Client(
         supabaseUrl,
         supabaseKey,
         new Supabase.SupabaseOptions
@@ -33,8 +36,14 @@ builder.Services.AddSingleton(sp =>
             AutoRefreshToken = true,
             AutoConnectRealtime = true
         }
-    );
-});
+    )
+);
+
+// =======================
+// APP SERVICES
+// =======================
+builder.Services.AddScoped<CookingRecipesWeb.Services.RecipeService>();
+builder.Services.AddScoped<CookingRecipesWeb.Services.UserService>();
 
 var app = builder.Build();
 
@@ -54,7 +63,9 @@ app.UseRouting();
 app.UseSession();
 app.UseAuthorization();
 
+// =======================
 // Routes
+// =======================
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}"

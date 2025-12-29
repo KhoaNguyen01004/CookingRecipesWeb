@@ -1,0 +1,82 @@
+@model IEnumerable<CookingRecipesWeb.Models.User>
+
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="container">
+    <h1 class="my-4">Admin Dashboard</h1>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Registered Users</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>First Name</th>
+                                <th>Last Name</th>
+                                <th>Email</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model != null && Model.Any())
+                            {
+                                @foreach (var user in Model)
+                                {
+                                    <tr>
+                                        <td>@user.Id</td>
+                                        <td>@user.FirstName</td>
+                                        <td>@user.LastName</td>
+                                        <td>@user.Email</td>
+                                        <td>
+                                            <a href="@Url.Action("EditUser", "Admin", new { id = user.Id })" class="btn btn-warning btn-sm">Edit</a>
+                                            <a href="@Url.Action("DeleteUser", "Admin", new { id = user.Id })" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this user?')">Delete</a>
+                                            <a href="@Url.Action("ManageFavorites", "Admin", new { userId = user.Id })" class="btn btn-info btn-sm">Manage Favorites</a>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="5">No users found.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Recipe Management</h5>
+                </div>
+                <div class="card-body">
+                    <p>View and manage recipes.</p>
+                    <a href="@Url.Action("ManageRecipes", "Admin")" class="btn btn-primary">Manage Recipes</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Category Management</h5>
+                </div>
+                <div class="card-body">
+                    <p>View and manage categories.</p>
+                    <a href="@Url.Action("ManageCategories", "Admin")" class="btn btn-primary">Manage Categories</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

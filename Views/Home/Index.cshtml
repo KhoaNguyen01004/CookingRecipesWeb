@@ -27,7 +27,7 @@
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title">@(recipe.StrMeal ?? "Unknown Recipe")</h5>
                             <p class="card-text">@(recipe.StrCategory ?? "Unknown") - @(recipe.StrArea ?? "Unknown")</p>
-                            <a href="@Url.Action("RecipeDetails", "Home", new { id = recipe.IdMeal })" class="btn btn-primary mt-auto">View Recipe</a>
+                            <a href="@Url.Action("RecipeDetails", "Home", new { id = recipe.Id })" class="btn btn-primary mt-auto">View Recipe</a>
                         </div>
                     </div>
                 </div>
@@ -42,6 +42,7 @@
     </div>
     <div class="text-center mt-4">
         <button id="load-more" class="btn btn-primary" data-category="@ViewBag.Category" data-skip="9">Load More</button>
+        <a href="@Url.Action("RandomDish", "Home")" class="btn btn-outline-secondary ml-2">🎲 Random Dish</a>
     </div>
 </div>
 

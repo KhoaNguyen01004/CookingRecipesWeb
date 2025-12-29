@@ -1,0 +1,86 @@
+@model CookingRecipesWeb.Models.Recipe
+
+@{
+    ViewData["Title"] = "Edit Recipe";
+}
+
+<div class="container">
+    <h1 class="my-4">Edit Recipe</h1>
+
+    <form asp-action="EditRecipe" method="post">
+        <input type="hidden" asp-for="Id" />
+
+        <div class="form-group">
+            <label asp-for="StrMeal">Meal Name</label>
+            <input asp-for="StrMeal" class="form-control" placeholder="Enter the name of the recipe" />
+            <small class="form-text text-muted">Provide a clear, descriptive name for the recipe</small>
+        </div>
+
+        <div class="form-group">
+            <label>Categories</label>
+            <select multiple class="form-control" id="categories-select">
+                @if (ViewBag.Categories != null)
+                {
+                    foreach (var category in ViewBag.Categories)
+                    {
+                        <option value="@category.Id">@category.Name</option>
+                    }
+                }
+            </select>
+            <small class="form-text text-muted">Select one or more categories for this recipe</small>
+            <a href="@Url.Action("ManageCategories", "Admin")" class="btn btn-sm btn-outline-primary mt-1">Add
+                Category</a>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="StrArea">Area</label>
+            <input asp-for="StrArea" class="form-control" placeholder="e.g., Italian, Mexican, Asian" />
+            <small class="form-text text-muted">Specify the cuisine or region this recipe originates from</small>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="StrInstructions">Instructions</label>
+            <textarea asp-for="StrInstructions" class="form-control" rows="5"
+                placeholder="Provide step-by-step cooking instructions"></textarea>
+            <small class="form-text text-muted">Write clear, detailed steps for preparing the recipe</small>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="StrMealThumb">Image URL</label>
+            <input asp-for="StrMealThumb" class="form-control"
+                placeholder="Enter a publicly available image URL (https://…)" />
+            <small class="form-text text-muted">Provide a URL to an image representing the finished dish</small>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="StrTags">Tags</label>
+            <input asp-for="StrTags" class="form-control" placeholder="e.g., vegetarian, spicy, quick" />
+            <small class="form-text text-muted">Add descriptive tags separated by commas</small>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="StrYoutube">YouTube URL</label>
+            <input asp-for="StrYoutube" class="form-control" placeholder="https://www.youtube.com/watch?v=..." />
+            <small class="form-text text-muted">Optional: Link to a video tutorial</small>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="StrIngredients">Ingredients (comma-separated)</label>
+            <input asp-for="StrIngredients" class="form-control" placeholder="e.g., Chicken, Rice, Onion" />
+            <small class="form-text text-muted">List all ingredients needed, separated by commas</small>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="StrMeasures">Measures (comma-separated)</label>
+            <input asp-for="StrMeasures" class="form-control" placeholder="e.g., 500g, 200g, 1" />
+            <small class="form-text text-muted">Corresponding measurements for each ingredient</small>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+        <a href="@Url.Action("ManageRecipes", "Admin")" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+
+@section Scripts {
+    <script src="~/js/edit-recipe.js" asp-append-version="true"></script>
+}

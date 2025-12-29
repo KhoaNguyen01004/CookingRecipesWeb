@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="light">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,11 +7,11 @@
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/CookingFinal_Remake.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/CookingRecipesWeb.styles.css" asp-append-version="true" />
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm border-bottom box-shadow mb-3">
             <div class="container-fluid">
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Recipes Website</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
@@ -21,49 +21,48 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Recipes</a>
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Recipes</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Categories">Categories</a>
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Categories">Categories</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
                     </ul>
-                    <form class="d-flex" asp-controller="Home" asp-action="Search" method="get">
-                        <input class="form-control me-2" type="search" placeholder="Search recipes..." aria-label="Search" name="query">
-                        <button class="btn btn-outline-success" type="submit">Search</button>
-                    </form>
-                    <button id="random-dish" class="btn btn-outline-info ms-2" type="button" aria-label="Random Dish">
-                        <i class="bi bi-shuffle"></i> Random Dish
-                    </button>
-                    <button id="theme-toggle" class="btn btn-outline-secondary ms-2" type="button" aria-label="Toggle theme">
-                        <i id="theme-icon" class="bi bi-moon"></i> <span id="theme-text">Dark Mode</span>
-                    </button>
-                    @if (Context.Session.GetString("UserId") != null)
-                    {
-                        <div class="dropdown ms-2">
-                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                Hi @Context.Session.GetString("FirstName")
-                            </button>
-                            <ul class="dropdown-menu" aria-labelledby="userDropdown">
-                                <li><a class="dropdown-item" asp-action="MyFavorites" asp-controller="Home">My Favorites</a></li>
-                                <li><a class="dropdown-item" asp-action="Logout" asp-controller="Account">Logout</a></li>
-                            </ul>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="dropdown ms-2">
-                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="authDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                Login/Register
-                            </button>
-                            <ul class="dropdown-menu" aria-labelledby="authDropdown">
-                                <li><a class="dropdown-item" asp-action="Login" asp-controller="Account">Login</a></li>
-                                <li><a class="dropdown-item" asp-action="Register" asp-controller="Account">Register</a></li>
-                            </ul>
-                        </div>
-                    }
+                    <div class="d-flex align-items-center gap-2">
+                        <form asp-controller="Home" asp-action="Search" method="get">
+                            <input class="form-control-sm" type="search" placeholder="Search recipes..." aria-label="Search" name="query">
+                            <button class="btn btn-outline-success btn-sm d-inline-flex align-items-center justify-content-center px-3 py-2" type="submit">Search</button>
+                        </form>
+                        <button id="random-dish" class="btn btn-outline-info btn-sm d-inline-flex align-items-center justify-content-center px-3 py-2" type="button" aria-label="Random Dish">Random Dish</button>
+                        <button id="theme-toggle" class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center px-3 py-2" type="button" aria-label="Toggle theme"><span id="theme-text">Dark Mode</span></button>
+                        @if (Context.Session.GetString("UserId") != null)
+                        {
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary dropdown-toggle btn-sm d-inline-flex align-items-center justify-content-center px-3 py-2" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">Hi @Context.Session.GetString("FirstName")</button>
+                                <ul class="dropdown-menu" aria-labelledby="userDropdown">
+                                    <li><a class="dropdown-item" asp-action="MyFavorites" asp-controller="Home"><i class="bi bi-heart me-2"></i>My Favorites</a></li>
+                                    @if (Context.Session.GetString("UserRole") == "admin")
+                                    {
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" asp-action="Index" asp-controller="Admin"><i class="bi bi-gear me-2"></i>Admin Panel</a></li>
+                                    }
+                                    <li><a class="dropdown-item" asp-action="Logout" asp-controller="Account"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                                </ul>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary dropdown-toggle btn-sm d-inline-flex align-items-center justify-content-center px-3 py-2" type="button" id="authDropdown" data-bs-toggle="dropdown" aria-expanded="false">Login/Register</button>
+                                <ul class="dropdown-menu" aria-labelledby="authDropdown">
+                                    <li><a class="dropdown-item" asp-action="Login" asp-controller="Account">Login</a></li>
+                                    <li><a class="dropdown-item" asp-action="Register" asp-controller="Account">Register</a></li>
+                                </ul>
+                            </div>
+                        }
+                    </div>
                 </div>
             </div>
         </nav>
@@ -81,26 +80,33 @@
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    </script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 
     <!-- Toast container -->
     <div class="toast-container position-fixed top-0 end-0 p-3">
-        <div id="successToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div id="successToast" class="toast align-items-center bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="d-flex">
                 <div class="toast-body">
                     <i class="bi bi-check-circle-fill me-2"></i>
                     <span id="successMessage"></span>
                 </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
             </div>
         </div>
-        <div id="errorToast" class="toast align-items-center text-white bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div id="errorToast" class="toast align-items-center bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="d-flex">
                 <div class="toast-body">
                     <i class="bi bi-exclamation-triangle-fill me-2"></i>
                     <span id="errorMessage"></span>
                 </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
             </div>
         </div>
     </div>

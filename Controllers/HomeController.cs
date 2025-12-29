@@ -39,9 +39,9 @@ namespace CookingRecipesWeb.Controllers
                 }
 
                 ViewBag.Category = category;
-                ViewBag.TotalRecipes = recipes.Count;
+                ViewBag.TotalRecipes = recipes != null ? recipes.Count : 0;
                 // Take only first 9 recipes for initial display
-                recipes = recipes.Take(9).ToList();
+                recipes = recipes != null ? recipes.Take(9).ToList() : new List<Recipe>();
             }
             else
             {
@@ -49,7 +49,7 @@ namespace CookingRecipesWeb.Controllers
 
                 if (!_cache.TryGetValue(cacheKey, out recipes))
                 {
-                    recipes = await _recipeService.GetRandomRecipesAsync(9);
+                    recipes = await _recipeService.GetApiRecipesAsync(9);
 
                     _cache.Set(
                         cacheKey,
@@ -62,6 +62,7 @@ namespace CookingRecipesWeb.Controllers
             return View(recipes);
         }
 
+        [HttpGet]
         public async Task<IActionResult> RecipeDetails(string id)
         {
             var recipe = await _recipeService.GetRecipeByIdAsync(id);
@@ -117,22 +118,24 @@ namespace CookingRecipesWeb.Controllers
                     _cache.Set(cacheKey, allRecipes, TimeSpan.FromMinutes(10));
                 }
 
-                recipes = allRecipes.Skip(skip).Take(9).ToList();
+                recipes = allRecipes != null ? allRecipes.Skip(skip).Take(9).ToList() : new List<Recipe>();
             }
             else
             {
                 recipes = await _recipeService.GetRandomRecipesAsync(9);
             }
 
-            return Json(recipes);
+            var recipeDtos = recipes.Select(r => _recipeService.MapRecipeToDto(r)).ToList();
+            return Json(recipeDtos);
         }
 
         public async Task<IActionResult> RandomDish()
         {
-            var recipes = await _recipeService.GetRandomRecipesAsync(1);
+            // Force refresh when getting random dish
+            var recipes = await _recipeService.GetApiRecipesAsync(1, forceRefresh: true);
             if (recipes != null && recipes.Any())
             {
-                return RedirectToAction("RecipeDetails", new { id = recipes.First().IdMeal });
+                return RedirectToAction("RecipeDetails", new { id = recipes.First().Id });
             }
             return RedirectToAction("Index");
         }

@@ -1,0 +1,18 @@
+@model CookingRecipesWeb.Models.Recipe
+
+<div class="recipe-form-section">
+    <div class="section-title">Media & Extras</div>
+    <div class="form-group">
+        <input asp-for="StrMealThumb" class="form-control" placeholder="Enter image URL (https://...)" />
+        <small class="form-text text-muted">Provide a publicly available image URL for your recipe</small>
+        <img id="image-preview" class="image-preview" alt="Recipe preview" />
+    </div>
+    <div class="form-group">
+        <input asp-for="StrTags" class="form-control" placeholder="e.g., vegetarian, spicy, quick" />
+        <small class="form-text text-muted">Comma-separated tags to describe your recipe</small>
+    </div>
+    <div class="form-group">
+        <input asp-for="StrYoutube" class="form-control" placeholder="YouTube video URL (optional)" />
+        <small class="form-text text-muted">Link to a cooking tutorial video</small>
+    </div>
+</div>

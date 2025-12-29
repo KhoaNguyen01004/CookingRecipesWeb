@@ -5,33 +5,27 @@
 
 document.addEventListener('DOMContentLoaded', function () {
     const themeToggle = document.getElementById('theme-toggle');
-    const themeIcon = document.getElementById('theme-icon');
     const themeText = document.getElementById('theme-text');
-    const body = document.body;
+    const html = document.documentElement;
 
     // Check for saved theme preference or default to light mode
     const currentTheme = localStorage.getItem('theme') || 'light';
     if (currentTheme === 'dark') {
-        body.classList.add('dark-mode');
-        themeIcon.classList.remove('bi-moon');
-        themeIcon.classList.add('bi-sun');
+        html.setAttribute('data-bs-theme', 'dark');
         themeText.textContent = 'Light Mode';
     } else {
+        html.setAttribute('data-bs-theme', 'light');
         themeText.textContent = 'Dark Mode';
     }
 
     // Toggle theme on button click
     themeToggle.addEventListener('click', function () {
-        if (body.classList.contains('dark-mode')) {
-            body.classList.remove('dark-mode');
-            themeIcon.classList.remove('bi-sun');
-            themeIcon.classList.add('bi-moon');
+        if (html.getAttribute('data-bs-theme') === 'dark') {
+            html.setAttribute('data-bs-theme', 'light');
             themeText.textContent = 'Dark Mode';
             localStorage.setItem('theme', 'light');
         } else {
-            body.classList.add('dark-mode');
-            themeIcon.classList.remove('bi-moon');
-            themeIcon.classList.add('bi-sun');
+            html.setAttribute('data-bs-theme', 'dark');
             themeText.textContent = 'Light Mode';
             localStorage.setItem('theme', 'dark');
         }

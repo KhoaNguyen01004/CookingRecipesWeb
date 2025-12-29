@@ -14,5 +14,7 @@ namespace CookingRecipesWeb.Models
         public string LastName { get; set; } = string.Empty;
         [Column("email")]
         public string Email { get; set; } = string.Empty;
+        [Column("role")]
+        public string Role { get; set; } = "user"; // Default role is 'user'
     }
 }
