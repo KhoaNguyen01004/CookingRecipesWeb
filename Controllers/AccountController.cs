@@ -46,6 +46,8 @@ namespace CookingRecipesWeb.Controllers
         {
             try
             {
+                _logger.LogInformation($"Login attempt for email: {email}");
+
                 // Verify captcha token
                 if (!await VerifyCaptchaToken(captchaToken))
                 {
@@ -53,30 +55,41 @@ namespace CookingRecipesWeb.Controllers
                     return RedirectToAction("Login");
                 }
 
+                _logger.LogInformation("CAPTCHA verification passed");
+
                 var session = await _client.Auth.SignIn(Supabase.Gotrue.Constants.SignInType.Email, email, password);
 
                 if (session?.User == null)
                 {
+                    _logger.LogWarning("Supabase sign in returned null session or user");
                     TempData["ErrorMessage"] = "Invalid email or password.";
                     return RedirectToAction("Login");
                 }
 
+                _logger.LogInformation($"Supabase sign in successful for user: {session.User.Id}");
+
                 var user = await _userService.GetUserByEmailAsync(email);
                 if (user == null)
                 {
+                    _logger.LogWarning($"User profile not found in database for email: {email}");
                     TempData["ErrorMessage"] = "User profile not found.";
                     return RedirectToAction("Login");
                 }
+
+                _logger.LogInformation($"User profile found: {user.FirstName} {user.LastName}");
 
                 HttpContext.Session.SetString("UserId", session.User.Id);
                 HttpContext.Session.SetString("UserEmail", email);
                 HttpContext.Session.SetString("FirstName", user.FirstName ?? "");
                 HttpContext.Session.SetString("UserRole", user.Role ?? "user");
 
+                _logger.LogInformation("Login successful, redirecting to home");
+
                 return RedirectToAction("Index", "Home");
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, $"Login failed for email: {email}");
                 TempData["ErrorMessage"] = "Login failed.";
                 return RedirectToAction("Login");
             }
