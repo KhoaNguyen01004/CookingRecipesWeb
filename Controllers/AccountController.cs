@@ -232,7 +232,6 @@ namespace CookingRecipesWeb.Controllers
             // For localhost testing with hCaptcha test sitekey, always succeed
             if (secretKey == "0x0000000000000000000000000000000000000000")
             {
-                Console.WriteLine($"[DEBUG] Localhost testing: CAPTCHA token '{token}' accepted without verification.");
                 return true;
             }
 
@@ -246,8 +245,6 @@ namespace CookingRecipesWeb.Controllers
             var response = await _httpClient.PostAsync("https://hcaptcha.com/siteverify", content);
             var responseString = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<dynamic>(responseString);
-
-            Console.WriteLine($"[DEBUG] CAPTCHA verification result: {result.success} for token '{token}'");
 
             return result.success == true;
         }

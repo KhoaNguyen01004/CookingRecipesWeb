@@ -9,5 +9,6 @@
 - [x] Update wwwroot/js/reset-password.js: Add dummy token for localhost testing.
 - [x] Add debug logs to JavaScript for localhost testing.
 - [x] Update TODO.md: Mark tasks as completed.
-- [ ] Test login, register, and reset password pages with hCaptcha.
-- [ ] Verify debug logs show token submission on localhost.
+- [x] Test login, register, and reset password pages with hCaptcha.
+- [x] Verify debug logs show token submission on localhost.
+- [x] Added client-side and server-side logging for CAPTCHA debugging.
