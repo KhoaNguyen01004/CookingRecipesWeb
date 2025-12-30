@@ -12,7 +12,9 @@
 
     @if (TempData["Error"] != null)
     {
-        <div class="alert alert-danger">@TempData["Error"]</div>
+        <script>
+            window.errorMessage = '@TempData["Error"]';
+        </script>
     }
 
     @if (Model != null && Model.Any())
@@ -86,11 +88,11 @@
                     if (data.success) {
                         location.reload();
                     } else {
-                        alert('Failed to delete category: ' + (data.message || 'Unknown error'));
+                        showErrorToast('Failed to delete category: ' + (data.message || 'Unknown error'));
                     }
                 })
                 .catch(error => {
-                    alert('Error deleting category: ' + error.message);
+                    showErrorToast('Error deleting category: ' + error.message);
                 });
         }
     }

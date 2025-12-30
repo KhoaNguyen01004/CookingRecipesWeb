@@ -25,9 +25,14 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Show error message if present
-    const errorMessage = window.errorMessage;
-    if (errorMessage) {
-        alert(errorMessage);
+    // Show error toast for TempData error message
+    if (window.errorMessage) {
+        showErrorToast(window.errorMessage);
+    }
+
+    // Show error toast for ModelState errors
+    if (window.modelStateErrors && window.modelStateErrors.length > 0) {
+        const errorMessage = window.modelStateErrors.join('\n');
+        showErrorToast(errorMessage);
     }
 });

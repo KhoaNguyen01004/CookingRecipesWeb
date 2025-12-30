@@ -13,7 +13,7 @@ namespace CookingRecipesWeb.Models
         public Guid UserId { get; set; }
         [Column("recipe_id")]
         public string RecipeId { get; set; } = string.Empty;
-        [Column("rating_value")]
+        [Column("rating")]
         public int RatingValue { get; set; }
         [Column("created_at")]
         public DateTime CreatedAt { get; set; }

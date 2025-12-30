@@ -3,10 +3,36 @@
 
 // Write your JavaScript code.
 
+// Toast utility functions
+function showSuccessToast(message) {
+    const successToast = new bootstrap.Toast(document.getElementById('successToast'));
+    document.getElementById('successMessage').textContent = message;
+    successToast.show();
+}
+
+function showErrorToast(message) {
+    const errorToast = new bootstrap.Toast(document.getElementById('errorToast'));
+    document.getElementById('errorMessage').textContent = message;
+    errorToast.show();
+}
+
+// Check for TempData messages on page load
+function checkForTempDataMessages() {
+    if (window.successMessage) {
+        showSuccessToast(window.successMessage);
+    }
+    if (window.errorMessage) {
+        showErrorToast(window.errorMessage);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     const themeToggle = document.getElementById('theme-toggle');
     const themeText = document.getElementById('theme-text');
     const html = document.documentElement;
+
+    // Check for TempData messages
+    checkForTempDataMessages();
 
     // Check for saved theme preference or default to light mode
     const currentTheme = localStorage.getItem('theme') || 'light';

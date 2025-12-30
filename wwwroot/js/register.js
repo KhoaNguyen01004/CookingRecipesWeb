@@ -51,10 +51,14 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Also show error toast if TempData has error message
-    if (globalThis.errorMessage) {
-        const errorToast = new bootstrap.Toast(document.getElementById('errorToast'));
-        document.getElementById('errorMessage').textContent = window.errorMessage;
-        errorToast.show();
+    // Show error toast for TempData error message
+    if (window.errorMessage) {
+        showErrorToast(window.errorMessage);
+    }
+
+    // Show error toast for ModelState errors
+    if (window.modelStateErrors && window.modelStateErrors.length > 0) {
+        const errorMessage = window.modelStateErrors.join('\n');
+        showErrorToast(errorMessage);
     }
 });

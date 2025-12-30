@@ -97,14 +97,14 @@
                             if (recipeCard) {
                                 recipeCard.remove();
                             }
-                            alert('Recipe deleted successfully.');
+                            showSuccessToast('Recipe deleted successfully.');
                         } else {
-                            alert('Failed to delete recipe: ' + (data.message || 'Unknown error'));
+                            showErrorToast('Failed to delete recipe: ' + (data.message || 'Unknown error'));
                         }
                     })
                     .catch(error => {
                         console.error('Error deleting recipe:', error);
-                        alert('An error occurred while deleting the recipe.');
+                        showErrorToast('An error occurred while deleting the recipe.');
                     });
             }
         }

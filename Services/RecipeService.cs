@@ -503,36 +503,19 @@ namespace CookingRecipesWeb.Services
 
         public async Task<bool> SubmitReviewAsync(Guid userId, string recipeId, string reviewText)
         {
-            var existingReview = await GetUserReviewAsync(userId, recipeId);
-            if (existingReview != null)
+            // Always create a new review instead of updating existing ones
+            var newReview = new Review
             {
-                // Update existing review
-                existingReview.ReviewText = reviewText;
-                existingReview.UpdatedAt = DateTime.UtcNow;
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                RecipeId = recipeId,
+                ReviewText = reviewText,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
 
-                var updateResponse = await _supabase
-                    .From<Review>()
-                    .Where(r => r.Id == existingReview.Id)
-                    .Update(existingReview);
-
-                return updateResponse.ResponseMessage?.IsSuccessStatusCode == true;
-            }
-            else
-            {
-                // Create new review
-                var newReview = new Review
-                {
-                    Id = Guid.NewGuid(),
-                    UserId = userId,
-                    RecipeId = recipeId,
-                    ReviewText = reviewText,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                };
-
-                var insertResponse = await _supabase.From<Review>().Insert(newReview);
-                return insertResponse.ResponseMessage?.IsSuccessStatusCode == true;
-            }
+            var insertResponse = await _supabase.From<Review>().Insert(newReview);
+            return insertResponse.ResponseMessage?.IsSuccessStatusCode == true;
         }
 
         public async Task<List<ReviewReply>> GetReviewRepliesByReviewIdAsync(Guid reviewId)
@@ -570,6 +553,30 @@ namespace CookingRecipesWeb.Services
                 .Get();
 
             return response.Models.FirstOrDefault();
+        }
+
+        public async Task<bool> EditReviewReplyAsync(Guid replyId, Guid userId, string replyText)
+        {
+            var reply = await _supabase
+                .From<ReviewReply>()
+                .Where(r => r.Id == replyId && r.UserId == userId)
+                .Get();
+
+            if (!reply.Models.Any())
+            {
+                return false; // Reply not found or not owned by user
+            }
+
+            var existingReply = reply.Models.First();
+            existingReply.ReplyText = replyText;
+            existingReply.UpdatedAt = DateTime.UtcNow;
+
+            var updateResponse = await _supabase
+                .From<ReviewReply>()
+                .Where(r => r.Id == replyId)
+                .Update(existingReply);
+
+            return updateResponse.ResponseMessage?.IsSuccessStatusCode == true;
         }
 
         public async Task<bool> DeleteReviewReplyAsync(Guid replyId, Guid userId)

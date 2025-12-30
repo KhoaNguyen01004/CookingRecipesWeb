@@ -252,13 +252,15 @@ document.addEventListener('DOMContentLoaded', function () {
                     reviewDiv.setAttribute('data-review-id', review.id);
 
                     let actionButtons = '';
+                    const isLoggedIn = document.getElementById('user-rating-stars') !== null;
+                    if (isLoggedIn) {
+                        actionButtons = `<button class="btn btn-sm btn-outline-secondary reply-btn" data-review-id="${review.id}">Reply</button>`;
+                    }
                     if (review.isOwner) {
-                        actionButtons = `
-                            <button class="btn btn-sm btn-outline-primary edit-review-btn" data-review-id="${review.id}">Edit</button>
+                        actionButtons += `
+                            <button class="btn btn-sm btn-outline-primary edit-review-btn ms-2" data-review-id="${review.id}">Edit</button>
                             <button class="btn btn-sm btn-outline-danger delete-review-btn ms-2" data-review-id="${review.id}">Delete</button>
                         `;
-                    } else {
-                        actionButtons = `<button class="btn btn-sm btn-outline-secondary reply-btn" data-review-id="${review.id}">Reply</button>`;
                     }
 
                     let repliesHtml = '';
@@ -266,8 +268,14 @@ document.addEventListener('DOMContentLoaded', function () {
                         repliesHtml = '<div class="replies mt-3 ms-4">';
                         review.replies.forEach(reply => {
                             let replyActionButtons = '';
+                            if (isLoggedIn) {
+                                replyActionButtons = `<button class="btn btn-sm btn-outline-secondary reply-to-reply-btn" data-review-id="${review.id}">Reply</button>`;
+                            }
                             if (reply.isOwner) {
-                                replyActionButtons = `<button class="btn btn-sm btn-outline-danger delete-reply-btn ms-2" data-reply-id="${reply.id}">Delete</button>`;
+                                replyActionButtons += `
+                                    <button class="btn btn-sm btn-outline-primary edit-reply-btn ms-2" data-reply-id="${reply.id}">Edit</button>
+                                    <button class="btn btn-sm btn-outline-danger delete-reply-btn ms-2" data-reply-id="${reply.id}">Delete</button>
+                                `;
                             }
 
                             repliesHtml += `
@@ -402,6 +410,32 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             });
         });
+
+        // Edit reply buttons
+        document.querySelectorAll('.edit-reply-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const replyId = this.getAttribute('data-reply-id');
+                const replyDiv = this.closest('.reply');
+                const replyText = replyDiv.querySelector('p').textContent;
+
+                document.getElementById('edit-reply-text').value = replyText;
+                document.getElementById('save-edit-reply-btn').setAttribute('data-reply-id', replyId);
+
+                const modal = new bootstrap.Modal(document.getElementById('editReplyModal'));
+                modal.show();
+            });
+        });
+
+        // Reply to reply buttons (replies to parent review)
+        document.querySelectorAll('.reply-to-reply-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const reviewId = this.getAttribute('data-review-id');
+                document.getElementById('submit-reply-btn').setAttribute('data-review-id', reviewId);
+
+                const modal = new bootstrap.Modal(document.getElementById('replyModal'));
+                modal.show();
+            });
+        });
     }
 
     // Edit review functionality
@@ -506,4 +540,37 @@ document.addEventListener('DOMContentLoaded', function () {
                 alert('Error deleting reply. Please try again.');
             });
     }
+
+    // Edit reply functionality
+    document.getElementById('save-edit-reply-btn').addEventListener('click', function () {
+        const replyId = this.getAttribute('data-reply-id');
+        const replyText = document.getElementById('edit-reply-text').value.trim();
+
+        if (replyText.length === 0) {
+            alert('Please enter reply text.');
+            return;
+        }
+
+        fetch(`/api/recipe/reply/${replyId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ replyText: replyText })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('editReplyModal'));
+                    modal.hide();
+                    loadReviews(); // Refresh reviews
+                } else if (data.error) {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error editing reply:', error);
+                alert('Error editing reply. Please try again.');
+            });
+    });
 });

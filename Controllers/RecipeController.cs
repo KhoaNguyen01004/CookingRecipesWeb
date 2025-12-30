@@ -312,6 +312,37 @@ namespace CookingRecipesWeb.Controllers
             }
         }
 
+        // PUT /api/recipe/reply/{replyId}
+        [HttpPut("reply/{replyId}")]
+        public async Task<IActionResult> EditReply(Guid replyId, [FromBody] ReviewReplyRequest request)
+        {
+            try
+            {
+                var userIdString = HttpContext.Session.GetString("UserId");
+                if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out Guid userId))
+                {
+                    return Unauthorized(new { error = "User not logged in" });
+                }
+
+                if (string.IsNullOrWhiteSpace(request.ReplyText))
+                {
+                    return BadRequest(new { error = "Reply text is required" });
+                }
+
+                var success = await _recipeService.EditReviewReplyAsync(replyId, userId, request.ReplyText);
+                if (!success)
+                {
+                    return NotFound(new { error = "Reply not found or you don't have permission to edit it" });
+                }
+
+                return Ok(new { message = "Reply updated successfully" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
         // DELETE /api/recipe/reply/{replyId}
         [HttpDelete("reply/{replyId}")]
         public async Task<IActionResult> DeleteReply(Guid replyId)

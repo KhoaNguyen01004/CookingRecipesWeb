@@ -28,12 +28,14 @@
 
         @if (ViewData.ModelState.ErrorCount > 0)
         {
-            <div class="alert alert-danger mt-3">
-                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
-                {
-                    <p>@error.ErrorMessage</p>
-                }
-            </div>
+            <script>
+                window.modelStateErrors = [
+                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        @: "@error.ErrorMessage.Replace("\"", "\\\"")",
+                    }
+                    ];
+            </script>
         }
 
         <p class="text-center mt-3">Don't have an account? <a asp-action="Register">Register here</a></p>

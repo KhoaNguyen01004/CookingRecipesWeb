@@ -1,24 +1,35 @@
-# TODO List for Recipe Review System Fixes
+# TODO: Improve Error/Warning Messages to Toast Notifications
 
-## Database Setup
-- [x] Apply the schema from `supabase_tables.sql` to create the `review_replies` table in Supabase database
-  - Go to Supabase dashboard > SQL Editor
-  - Run the CREATE TABLE statements for review_replies and enable RLS
-  - Apply the RLS policies for review_replies
+## Current Issues Found:
+- Multiple views use Bootstrap alerts for TempData messages (ManageFavorites, ManageCategories)
+- Login.js uses alert() instead of toast for error messages
+- Admin pages (ManageCategories, ManageRecipes) use alert() in JavaScript
+- ModelState errors in Login/Register use Bootstrap alerts
+- Inconsistent message display across the application
 
-## Code Changes Completed
-- [x] Added DeleteReply endpoint in RecipeController.cs
-- [x] Updated JavaScript to call the delete reply API
-- [x] Added GetReviewReplyByIdAsync method in RecipeService.cs
-- [x] Added DeleteReviewReplyAsync method in RecipeService.cs
+## Tasks to Complete:
 
-## Testing
-- [ ] Test review editing functionality
-- [ ] Test reply deletion functionality
-- [ ] Verify review_replies table exists and is accessible
+### 1. Create Global Toast Utility
+- [ ] Add toast utility functions to site.js for showing success/error toasts
+- [ ] Add function to check and display TempData messages on page load
 
-## Notes
-- The review_replies table schema is defined in supabase_tables.sql but needs to be applied to the database
-- Edit review functionality should work once database is properly set up
-- Delete reply functionality is now implemented and ready for testing
-- Build errors have been resolved
+### 2. Update Login/Register Pages
+- [ ] Update login.js to use toast instead of alert() for error messages
+- [ ] Update Login.cshtml to use toast for ModelState errors
+- [ ] Update Register.cshtml to use toast for ModelState errors
+- [ ] Ensure success messages also use toast
+
+### 3. Update Admin Views
+- [ ] Update ManageFavorites.cshtml to use toast instead of Bootstrap alerts
+- [ ] Update ManageCategories.cshtml to use toast instead of Bootstrap alerts
+- [ ] Update ManageRecipes.cshtml JavaScript to use toast instead of alert()
+- [ ] Update ManageCategories.cshtml JavaScript to use toast instead of alert()
+
+### 4. Handle Success Messages
+- [ ] Ensure all success messages (TempData["Success"], TempData["SuccessMessage"]) use toast
+- [ ] Update any missing success message handling
+
+### 5. Testing
+- [ ] Test all updated pages to ensure toasts display correctly
+- [ ] Verify toast auto-dismiss behavior
+- [ ] Check toast styling in both light and dark themes
